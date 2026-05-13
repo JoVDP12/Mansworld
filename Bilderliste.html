@@ -137,38 +137,57 @@ input[type=range][orient=vertical] {
 
 /* --- Mobiele Responsiveness --- */
 @media (max-width: 768px) {
-    /* Zet de canvassen en sliders onder elkaar in plaats van naast elkaar */
+    /* Navigatiebalk compacter maken */
+    .nav-controls {
+        padding: 5px;
+    }
+    
+    .nav-row {
+        gap: 5px; /* Minder witruimte tussen de knoppen */
+    }
+
+    /* Maak de knoppen een stuk kleiner */
+    .btn {
+        padding: 6px 8px;
+        margin-bottom: 2px;
+        font-size: 0.75em; /* Kleiner lettertype */
+    }
+
+    /* Zet de canvassen onder elkaar met minder tussenruimte */
     .canvas-wrapper {
         flex-direction: column;
         align-items: center;
-        padding: 10px 5px;
+        padding: 5px;
+        gap: 10px;
     }
 
-    /* Maak het slider blok horizontaal zodat het beter tussen de canvassen past */
+    /* Maak het slider blok horizontaal en veel compacter */
     .slider-container {
         flex-direction: row;
         width: 100%;
         height: auto;
-        padding: 15px;
+        padding: 5px;
+        justify-content: center;
+        gap: 20px; /* Ruimte tussen de twee sliders */
     }
 
-    /* Verander de verticale sliders naar gewone horizontale sliders voor mobiel */
+    /* Tekst bij de sliders kleiner maken */
+    .slider-group {
+        font-size: 0.7em;
+        gap: 5px;
+    }
+
+    /* Sliders omzetten naar horizontaal en formaat flink verkleinen */
     input[type=range][orient=vertical] {
         writing-mode: horizontal-tb;
         direction: ltr;
         appearance: auto;
         -webkit-appearance: auto;
-        width: 120px;
-        height: 15px;
-    }
-
-    /* Maak de navigatieknoppen iets breder en makkelijker aan te tikken */
-    .btn {
-        padding: 10px 15px;
-        margin-bottom: 5px;
-        font-size: 0.9em;
+        width: 80px;  /* Veel kortere slider */
+        height: 10px; /* Dunnere slider */
     }
 }
+
 
 
 		
