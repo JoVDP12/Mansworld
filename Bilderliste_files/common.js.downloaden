@@ -43,23 +43,27 @@ function resizeCanvases() {
     // Check of we op een smal (mobiel) scherm zitten
     let isMobile = window.innerWidth < 768;
     
-    // Als het mobiel is, gebruik dan bijna de hele breedte. Anders de helft.
-    let targetWidth = isMobile ? window.innerWidth * 0.9 : (window.innerWidth / 2);
-    
-    // Zorg op mobiel dat de hoogte iets wordt beperkt zodat je nog goed kunt scrollen
-    let targetHeight = isMobile ? window.innerHeight * 0.6 : window.innerHeight;
+    // Gebruik op mobiel 95% van de breedte en sta tot 85% van de schermhoogte toe
+    let targetWidth = isMobile ? window.innerWidth * 0.95 : (window.innerWidth / 2) * 0.95;
+    let targetHeight = isMobile ? window.innerHeight * 0.85 : window.innerHeight * 0.9;
 
-    while (bw * 1.1 < targetWidth && bh * 1.3 < targetHeight) {
+    // Bepaal de veiligheidsmarges: op mobiel maken we deze bijna nul zodat het canvas maximaal groeit
+    let marginWidth = isMobile ? 1.02 : 1.1;
+    let marginHeight = isMobile ? 1.05 : 1.3;
+
+    // Blijf het canvas vergroten (offset++) zolang het binnen de schermmarges past
+    while (bw * marginWidth < targetWidth && bh * marginHeight < targetHeight) {
         offset++;
         scale = offset * 2;
         bw = scale * (2 * FLOORSIZE + 1) + 1 + 2 * offset;
         bh = scale * (2 * FLOORSIZE + 1) + 1 + 2 * offset;
     }
+    
     textsize = Math.ceil(offset / 1.2);
-    rectHeight = offset/1.0;
-    rectWidth = offset/1.0;
+    rectHeight = offset / 1.0;
+    rectWidth = offset / 1.0;
 
-    // Stel afmetingen voor beide canvassen in
+    // Stel de nieuw berekende afmetingen in voor beide canvassen
     canvas1.setAttribute("height", "" + bh);
     canvas1.setAttribute("width", "" + bw);
     canvas2.setAttribute("height", "" + bh);
@@ -67,7 +71,6 @@ function resizeCanvases() {
 
     refresh();
 }
-
 
 
 window.onload = function () {
