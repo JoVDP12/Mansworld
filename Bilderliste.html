@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!-- saved from url=(0038)https://tseiser.github.io/Bilderliste/ -->
-<html lang="en" style="--teamcolor: #7990ec;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<html lang="en" style="--teamcolor: #94ec79; --title-button-bg: #ff0000;"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 
 
  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
@@ -118,13 +118,7 @@ input[type=range][orient=vertical] {
 }
 
 /* Stijl voor de nieuwe navigatiebalk */
-.nav-controls {
-    display: flex;
-    justify-content: center;
-    padding: 10px;
-    background: #f4f4f4;
-    border-bottom: 2px solid var(--teamcolor);
-}
+
 
 .nav-row {
     display: flex;
@@ -133,6 +127,32 @@ input[type=range][orient=vertical] {
     flex-wrap: wrap; /* Zorgt ervoor dat knoppen naar de volgende regel gaan bij te weinig ruimte */
     justify-content: center;
 }
+
+    .nav-title {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 220px;
+        padding: 10px 18px;
+        font-size: 1rem;
+        font-weight: 600;
+        color: white;
+        background-color: var(--title-button-bg);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        white-space: nowrap;
+    }
+
+    .nav-title:hover {
+        opacity: 0.92;
+    }
+
+    .nav-group {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+    }
 
 
 /* --- Mobiele Responsiveness --- */
@@ -196,19 +216,26 @@ input[type=range][orient=vertical] {
 </head>
 <body>
 
+
 <div class="nav-controls">
     <div class="nav-row">
-        <button onclick="prevdrittel()" class="btn">&larr; Deel</button>
-        <button onclick="prevtanz()" class="btn">&larr; Dans</button>
-        <button onclick="prev()" class="btn">&larr; Beeld</button>
-        <button onclick="animatePrev(false)" class="btn">&laquo; Move</button>
-        <button onclick="animatePrev(true)" class="btn">&laquo;&laquo; Play to Start</button>
-        
-        <span style="width: 40px;"></span> <button onclick="animateNext(true)" class="btn">Play to End &raquo;&raquo;</button>
-        <button onclick="animateNext(false)" class="btn">Move &raquo;</button>
-        <button onclick="next()" class="btn">Beeld &rarr;</button>
-        <button onclick="nexttanz()" class="btn">Dans &rarr;</button>
-        <button onclick="nextdrittel()" class="btn">Deel &rarr;</button>
+        <div class="nav-group">
+            <button onclick="prevdrittel()" class="btn">&larr; Deel</button>
+            <button onclick="prevtanz()" class="btn">&larr; Dans</button>
+            <button onclick="prev()" class="btn">&larr; Beeld</button>
+            <button onclick="animatePrev(false)" class="btn">&laquo; Move</button>
+            <button onclick="animatePrev(true)" class="btn">&laquo;&laquo; Play to Start</button>
+        </div>
+
+        <button class="nav-title">Is It A Man's World?</button>
+
+        <div class="nav-group">
+            <button onclick="animateNext(true)" class="btn">Play to End &raquo;&raquo;</button>
+            <button onclick="animateNext(false)" class="btn">Move &raquo;</button>
+            <button onclick="next()" class="btn">Beeld &rarr;</button>
+            <button onclick="nexttanz()" class="btn">Dans &rarr;</button>
+            <button onclick="nextdrittel()" class="btn">Deel &rarr;</button>
+        </div>
     </div>
 </div>
 
