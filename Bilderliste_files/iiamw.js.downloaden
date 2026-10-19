@@ -14,14 +14,14 @@ const POINT_COLORS = [
 ];
 
 const POSITION_LABELS = [
-  "1", // text Position 1 - Steven & Nele
-  "2", // text Position 2 - Dieter & Emily
-  "3", // text Position 3 - Bart & Anncik
-  "4", // text Position 4 - Nick & Isabel
-  "5", // text Position 5 - Jens & Caroline
-  "6", // text Position 6 - Swa & Lieve
-  "7", // text Position 7 - Peter & Kaat
-  "8" // text Position 8 - Frans & Sandy
+  "", // text Position 1 - Steven & Nele
+  "", // text Position 2 - Dieter & Emily
+  "", // text Position 3 - Bart & Anncik
+  "", // text Position 4 - Nick & Isabel
+  "", // text Position 5 - Jens & Caroline
+  "", // text Position 6 - Swa & Lieve
+  "", // text Position 7 - Peter & Kaat
+  "" // text Position 8 - Frans & Sandy
 ];
 
 const BILDER = [
