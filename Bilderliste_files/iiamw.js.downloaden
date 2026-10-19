@@ -14,14 +14,14 @@ const POINT_COLORS = [
 ];
 
 const POSITION_LABELS = [
-  "", // text Position 1 - Steven & Nele
-  "", // text Position 2 - Dieter & Emily
-  "", // text Position 3 - Bart & Anncik
-  "", // text Position 4 - Nick & Isabel
-  "", // text Position 5 - Jens & Caroline
-  "", // text Position 6 - Swa & Lieve
-  "", // text Position 7 - Peter & Kaat
-  "" // text Position 8 - Frans & Sandy
+  "1", // text Position 1 - Steven & Nele
+  "2", // text Position 2 - Dieter & Emily
+  "3", // text Position 3 - Bart & Anncik
+  "4", // text Position 4 - Nick & Isabel
+  "5", // text Position 5 - Jens & Caroline
+  "6", // text Position 6 - Swa & Lieve
+  "7", // text Position 7 - Peter & Kaat
+  "8" // text Position 8 - Frans & Sandy
 ];
 
 const BILDER = [
@@ -70,13 +70,21 @@ const BILDER = [
 {"drittel":"D2","points":[{"x":3,"y":0,"p":1},{"x":-1.5,"y":3,"p":2},{"x":-3,"y":1.5,"p":3},{"x":-3,"y":0,"p":4},{"x":-1.5,"y":1.5,"p":5},{"x":1.5,"y":3,"p":6},{"x":3,"y":1.5,"p":7},{"x":1.5,"y":1.5,"p":8}],"name":"Promenade (Schlag 7)","tanz":"T2","order":"420"},
 {"drittel":"D2","points":[{"x":1,"y":-7,"p":1},{"x":-1,"y":0,"p":2},{"x":-1,"y":-4,"p":3},{"x":-1,"y":-6,"p":4},{"x":-1,"y":-2,"p":5},{"x":1,"y":-1,"p":6},{"x":1,"y":-5,"p":7},{"x":1,"y":-3,"p":8}],"name":"Vor Chasse","tanz":"T2","order":"430"},
 {"drittel":"D2","points":[{"x":-1,"y":-7,"p":1},{"x":1,"y":0,"p":2},{"x":1,"y":-4,"p":3},{"x":1,"y":-6,"p":4},{"x":1,"y":-2,"p":5},{"x":-1,"y":-1,"p":6},{"x":-1,"y":-5,"p":7},{"x":-1,"y":-3,"p":8}],"name":"Chasse Whisk","tanz":"T2","order":"440"},
-{"drittel":"D2","points":[{"x":0,"y":-7,"p":1},{"x":0,"y":0,"p":2},{"x":0,"y":-4,"p":3},{"x":0,"y":-6,"p":4},{"x":0,"y":-2,"p":5},{"x":0,"y":-1,"p":6},{"x":0,"y":-5,"p":7},{"x":0,"y":-3,"p":8}],"name":"Mit Mitte des Körpers auf Punkt stehen. Nach Achsen und Seit Schluss ","tanz":"EW1","order":"500"},
-{"drittel":"D2","points":[{"x":-1.5,"y":-1.5,"p":1},{"x":0,"y":3,"p":2},{"x":-3,"y":0,"p":3},{"x":1.5,"y":-1.5,"p":4},{"x":-1.5,"y":1.5,"p":5},{"x":1.5,"y":1.5,"p":6},{"x":0,"y":0,"p":7},{"x":3,"y":0,"p":8}],"name":"Tumble Turn","tanz":"EW1","order":"510"},
-{"drittel":"D2","points":[{"x":-3,"y":1.5,"p":1},{"x":-4.5,"y":4.5,"p":2},{"x":-4.5,"y":1.5,"p":3},{"x":-1.5,"y":3,"p":4},{"x":-4.5,"y":3,"p":5},{"x":-3,"y":4.5,"p":6},{"x":-3,"y":3,"p":7},{"x":-1.5,"y":4.5,"p":8}],"name":"Kick","tanz":"EW1","order":"520"},
-{"drittel":"D2","points":[{"x":0,"y":-1.5,"p":1},{"x":-3,"y":1.5,"p":2},{"x":-3,"y":-1.5,"p":3},{"x":1.5,"y":0,"p":4},{"x":-4.5,"y":0,"p":5},{"x":-1.5,"y":3,"p":6},{"x":-1.5,"y":0,"p":7},{"x":0,"y":1.5,"p":8}],"name":"Promenadenlaufen","tanz":"EW1","order":"530"},
-{"drittel":"D2","points":[{"x":1.5,"y":-1.5,"p":1},{"x":-1.5,"y":1.5,"p":2},{"x":-1.5,"y":-1.5,"p":3},{"x":3,"y":0,"p":4},{"x":-3,"y":0,"p":5},{"x":0,"y":3,"p":6},{"x":0,"y":0,"p":7},{"x":1.5,"y":1.5,"p":8}],"name":"Chasse","tanz":"EW1","order":"540"},
-{"drittel":"D2","points":[{"x":5,"y":-3,"p":1},{"x":3,"y":0,"p":2},{"x":3,"y":-3,"p":3},{"x":6,"y":-1.5,"p":4},{"x":2,"y":-1.5,"p":5},{"x":4,"y":1.5,"p":6},{"x":4,"y":-1.5,"p":7},{"x":5,"y":0,"p":8}],"name":"Vor Chasse","tanz":"EW1","order":"550"},
-{"drittel":"D2","points":[{"x":-2,"y":-6,"p":1},{"x":-4,"y":-4,"p":2},{"x":-4,"y":-6,"p":3},{"x":-1,"y":-5,"p":4},{"x":-5,"y":-5,"p":5},{"x":-3,"y":-3,"p":6},{"x":-3,"y":-5,"p":7},{"x":-2,"y":-4,"p":8}],"name":"Check vor Achse","tanz":"EW1","order":"560"},
+
+
+// Engelse Wals 1
+{"drittel":"D2","points":[{"x":0,"y":-7,"p":1},{"x":0,"y":0,"p":2},{"x":0,"y":-4,"p":3},{"x":0,"y":-6,"p":4},{"x":0,"y":-2,"p":5},{"x":0,"y":-1,"p":6},{"x":0,"y":-5,"p":7},{"x":0,"y":-3,"p":8}],"name":"Start EW: Chassé + Tumble Turn","tanz":"EW1","order":"500"},
+{"drittel":"D2","points":[{"x":-1.5,"y":-1.5,"p":1},{"x":0,"y":3,"p":2},{"x":-3,"y":0,"p":3},{"x":1.5,"y":-1.5,"p":4},{"x":-1.5,"y":1.5,"p":5},{"x":1.5,"y":1.5,"p":6},{"x":0,"y":0,"p":7},{"x":3,"y":0,"p":8}],"name":"Chassé","tanz":"EW1","order":"510"},
+{"drittel":"D2","points":[{"x":-1.5,"y":0,"p":1},{"x":0,"y":4.5,"p":2},{"x":-3,"y":1.5,"p":3},{"x":1.5,"y":0,"p":4},{"x":-1.5,"y":3,"p":5},{"x":1.5,"y":3,"p":6},{"x":0,"y":1.5,"p":7},{"x":3,"y":1.5,"p":8}],"name":"Run + Rondé","tanz":"EW1","order":"510"},
+{"drittel":"D2","points":[{"x":-3,"y":1.5,"p":1},{"x":-4.5,"y":4.5,"p":2},{"x":-4.5,"y":1.5,"p":3},{"x":-1.5,"y":3,"p":4},{"x":-4.5,"y":3,"p":5},{"x":-3,"y":4.5,"p":6},{"x":-3,"y":3,"p":7},{"x":-1.5,"y":4.5,"p":8}],"name":"Standing Spin + Promenade run","tanz":"EW1","order":"520"},
+{"drittel":"D2","points":[{"x":0,"y":-1.5,"p":1},{"x":-3,"y":1.5,"p":2},{"x":-3,"y":-1.5,"p":3},{"x":1.5,"y":0,"p":4},{"x":-4.5,"y":0,"p":5},{"x":-1.5,"y":3,"p":6},{"x":-1.5,"y":0,"p":7},{"x":0,"y":1.5,"p":8}],"name":"Chassé","tanz":"EW1","order":"530"},
+{"drittel":"D2","points":[{"x":1.5,"y":-1.5,"p":1},{"x":-1.5,"y":1.5,"p":2},{"x":-1.5,"y":-1.5,"p":3},{"x":3,"y":0,"p":4},{"x":-3,"y":0,"p":5},{"x":0,"y":3,"p":6},{"x":0,"y":0,"p":7},{"x":1.5,"y":1.5,"p":8}],"name":"2x Pivot","tanz":"EW1","order":"540"},
+{"drittel":"D2","points":[{"x":5,"y":-3,"p":1},{"x":3,"y":0,"p":2},{"x":3,"y":-3,"p":3},{"x":6,"y":-1.5,"p":4},{"x":2,"y":-1.5,"p":5},{"x":4,"y":1.5,"p":6},{"x":4,"y":-1.5,"p":7},{"x":5,"y":0,"p":8}],"name":"Back Run","tanz":"EW1","order":"550"},
+{"drittel":"D2","points":[{"x":5,"y":-4.5,"p":1},{"x":3,"y":-1.5,"p":2},{"x":3,"y":-4.5,"p":3},{"x":6,"y":-3,"p":4},{"x":2,"y":-3,"p":5},{"x":4,"y":0,"p":6},{"x":4,"y":-3,"p":7},{"x":5,"y":-1.5,"p":8}],"name":"Chassé + Gesyncopeerde weave + linksom naar lijn","tanz":"EW1","order":"551"},
+{"drittel":"D2","points":[{"x":-2,"y":-6,"p":1},{"x":-4,"y":-4,"p":2},{"x":-4,"y":-6,"p":3},{"x":-1,"y":-5,"p":4},{"x":-5,"y":-5,"p":5},{"x":-3,"y":-3,"p":6},{"x":-3,"y":-5,"p":7},{"x":-2,"y":-4,"p":8}],"name":"Ronddraaien naar andere lijn + pose","tanz":"EW1","order":"560"},
+
+
+
 {"drittel":"D3","points":[{"x":-3,"y":-7,"p":1},{"x":-5,"y":-5,"p":2},{"x":-5,"y":-7,"p":3},{"x":-2,"y":-6,"p":4},{"x":-6,"y":-6,"p":5},{"x":-4,"y":-4,"p":6},{"x":-4,"y":-6,"p":7},{"x":-3,"y":-5,"p":8}],"name":"Whisk","tanz":"QS2","order":"600"},
 {"drittel":"D3","points":[{"x":2.25,"y":-0.75,"p":1},{"x":-0.75,"y":2.25,"p":2},{"x":-0.75,"y":-0.75,"p":3},{"x":3,"y":-1.5,"p":4},{"x":-2.25,"y":0.75,"p":5},{"x":0,"y":1.5,"p":6},{"x":0.75,"y":0.75,"p":7},{"x":1.5,"y":0,"p":8}],"name":"1. Running Finish","tanz":"QS2","order":"610"},
 {"drittel":"D3","points":[{"x":6,"y":-6,"p":1},{"x":3,"y":-3,"p":2},{"x":4.5,"y":-4.5,"p":3},{"x":-3,"y":4.5,"p":4},{"x":3,"y":-6,"p":5},{"x":-4.5,"y":6,"p":6},{"x":6,"y":-3,"p":7},{"x":-4.5,"y":3,"p":8}],"name":"Running Finish nach der Promenade","tanz":"QS2","order":"620"},
