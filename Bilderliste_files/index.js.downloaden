@@ -5,6 +5,7 @@ let spur = false;
 let speed = 10;
 const ADMIN_PASSWORD = "Topteam";
 let adminUnlocked = false;
+let extraInfoFileHandle = null;
 
 
 function onclick(x, y) {
@@ -49,6 +50,78 @@ function getExtraInfoKey(imageIndex) {
     return "iiamw-extra-info-" + imageIndex;
 }
 
+function isLocalPage() {
+    return window.location.protocol === "file:";
+}
+
+function parseExtraInfoNotes(notes) {
+    if (!notes || typeof notes !== "object" || Array.isArray(notes)) {
+        throw new Error("Het JSON-bestand heeft niet het verwachte formaat.");
+    }
+    return notes;
+}
+
+async function readExtraInfoFile(fileHandle) {
+    const file = await fileHandle.getFile();
+    const notes = JSON.parse(await file.text());
+    return parseExtraInfoNotes(notes);
+}
+
+async function writeExtraInfoFile(fileHandle, notes) {
+    const writable = await fileHandle.createWritable();
+    await writable.write(JSON.stringify(notes, null, 2));
+    await writable.close();
+}
+
+async function loadExtraInfoNotes() {
+    if (extraInfoFileHandle) {
+        const permission = await extraInfoFileHandle.queryPermission({ mode: "readwrite" });
+        if (permission === "granted") {
+            return await readExtraInfoFile(extraInfoFileHandle);
+        }
+        extraInfoFileHandle = null;
+    }
+
+    if (!isLocalPage()) {
+        const response = await fetch("./extra-info.json", { cache: "no-store" });
+        if (!response.ok) {
+            throw new Error("extra-info.json kon niet worden geladen (HTTP " + response.status + ").");
+        }
+        return parseExtraInfoNotes(await response.json());
+    }
+
+    if (!extraInfoFileHandle) {
+        return null;
+    }
+
+    return null;
+}
+
+async function chooseExtraInfoFile() {
+    if (!window.showOpenFilePicker) {
+        throw new Error("Bestanden kiezen wordt niet ondersteund. Open de pagina in Chrome of Edge.");
+    }
+
+    const [fileHandle] = await window.showOpenFilePicker({
+        multiple: false,
+        types: [{
+            description: "JSON-bestand",
+            accept: { "application/json": [".json"] }
+        }]
+    });
+    let permission = await fileHandle.queryPermission({ mode: "readwrite" });
+    if (permission !== "granted") {
+        permission = await fileHandle.requestPermission({ mode: "readwrite" });
+    }
+    if (permission !== "granted") {
+        throw new Error("Geen toestemming om het gekozen bestand te lezen en te bewerken.");
+    }
+
+    await readExtraInfoFile(fileHandle);
+    extraInfoFileHandle = fileHandle;
+    return fileHandle;
+}
+
 function unlockAdmin() {
     const enteredPassword = window.prompt("Voer het admin-wachtwoord in:");
     if (enteredPassword !== ADMIN_PASSWORD) {
@@ -91,12 +164,21 @@ function ensureExtraInfoControls() {
     title.id = "extraInfoTitle";
     title.innerText = "Extra info";
 
+    const fileNotice = document.createElement("p");
+    fileNotice.id = "extraInfoNotice";
+
     const textarea = document.createElement("textarea");
     textarea.id = "extraInfoText";
     textarea.setAttribute("aria-label", "Bijkomende info");
     textarea.rows = 8;
     textarea.style.width = "100%";
     textarea.style.boxSizing = "border-box";
+
+    const selectFileButton = document.createElement("button");
+    selectFileButton.id = "extraInfoSelectFile";
+    selectFileButton.type = "button";
+    selectFileButton.innerText = "Kies Drive-bestand";
+    selectFileButton.addEventListener("click", selectExtraInfoFile);
 
     const actions = document.createElement("div");
     actions.style.display = "flex";
@@ -112,40 +194,100 @@ function ensureExtraInfoControls() {
     });
 
     const saveButton = document.createElement("button");
+    saveButton.id = "extraInfoSave";
     saveButton.type = "button";
     saveButton.innerText = "Bewaren";
     saveButton.addEventListener("click", saveExtraInfo);
 
-    actions.append(cancelButton, saveButton);
-    dialog.append(title, textarea, actions);
+    actions.append(selectFileButton, cancelButton, saveButton);
+    dialog.append(title, fileNotice, textarea, actions);
     document.body.appendChild(dialog);
 }
 
-function openExtraInfoDialog() {
+async function openExtraInfoDialog() {
     const dialog = document.getElementById("extraInfoDialog");
     const textarea = document.getElementById("extraInfoText");
-    const notes = JSON.parse(localStorage.getItem("iiamw-extra-info") || "{}");
+    const notice = document.getElementById("extraInfoNotice");
+    const selectFileButton = document.getElementById("extraInfoSelectFile");
+    const saveButton = document.getElementById("extraInfoSave");
 
     dialog.dataset.imageIndex = current;
-    textarea.value = notes[getExtraInfoKey(current)] || "";
+    textarea.value = "";
+    textarea.readOnly = true;
+    selectFileButton.hidden = false;
+    saveButton.hidden = true;
+    notice.innerText = isLocalPage()
+        ? "Kies het gedeelde extra-info.json-bestand in Drive om opmerkingen te lezen en te bewerken. Publiceer na wijzigingen ook het JSON-bestand naar GitHub om ze online zichtbaar te maken."
+        : "Online opmerkingen (alleen lezen). Kies het gedeelde Drive-bestand om ze te bewerken; publiceer wijzigingen daarna naar GitHub.";
     dialog.showModal();
+
+    try {
+        const notes = await loadExtraInfoNotes();
+        if (notes) {
+            textarea.value = notes[getExtraInfoKey(current)] || "";
+            textarea.readOnly = !extraInfoFileHandle;
+            saveButton.hidden = !extraInfoFileHandle;
+        } else {
+            notice.innerText = "Kies het gedeelde extra-info.json-bestand in Drive.";
+        }
+    } catch (error) {
+        if (isLocalPage()) {
+            notice.innerText = "Het bestand kon niet worden geladen. Kies het gedeelde JSON-bestand opnieuw.";
+            window.alert("De extra info kon niet worden geladen: " + error.message);
+        } else {
+            notice.innerText = "Online opmerkingen konden niet worden geladen (" + error.message + "). Kies het gedeelde Drive-bestand om ze te lezen of te bewerken.";
+        }
+    }
     textarea.focus();
 }
 
-function saveExtraInfo() {
+async function selectExtraInfoFile() {
     const dialog = document.getElementById("extraInfoDialog");
     const textarea = document.getElementById("extraInfoText");
-    const notes = JSON.parse(localStorage.getItem("iiamw-extra-info") || "{}");
-    const key = getExtraInfoKey(Number(dialog.dataset.imageIndex));
-
-    if (textarea.value.trim()) {
-        notes[key] = textarea.value;
-    } else {
-        delete notes[key];
+    const notice = document.getElementById("extraInfoNotice");
+    try {
+        const fileHandle = await chooseExtraInfoFile();
+        const notes = await readExtraInfoFile(fileHandle);
+        textarea.value = notes[getExtraInfoKey(Number(dialog.dataset.imageIndex))] || "";
+        textarea.readOnly = false;
+        document.getElementById("extraInfoSave").hidden = false;
+        notice.innerText = "Drive-bestand gekozen. Wijzigingen worden daarin bewaard; publiceer het JSON-bestand ook naar GitHub voor de online versie.";
+    } catch (error) {
+        if (error.name !== "AbortError") {
+            window.alert("Het Drive-bestand kon niet worden geopend: " + error.message);
+        }
     }
+}
 
-    localStorage.setItem("iiamw-extra-info", JSON.stringify(notes));
-    dialog.close();
+async function saveExtraInfo() {
+    const dialog = document.getElementById("extraInfoDialog");
+    const textarea = document.getElementById("extraInfoText");
+    try {
+        if (!extraInfoFileHandle) {
+            throw new Error("Kies eerst het gedeelde Drive-bestand.");
+        }
+
+        let permission = await extraInfoFileHandle.queryPermission({ mode: "readwrite" });
+        if (permission !== "granted") {
+            permission = await extraInfoFileHandle.requestPermission({ mode: "readwrite" });
+        }
+        if (permission !== "granted") {
+            throw new Error("Geen toestemming om het Drive-bestand te bewerken. Kies het bestand opnieuw.");
+        }
+
+        const notes = await readExtraInfoFile(extraInfoFileHandle);
+        const key = getExtraInfoKey(Number(dialog.dataset.imageIndex));
+        if (textarea.value.trim()) {
+            notes[key] = textarea.value;
+        } else {
+            delete notes[key];
+        }
+        await writeExtraInfoFile(extraInfoFileHandle, notes);
+        document.getElementById("extraInfoNotice").innerText = "Opgeslagen in het Drive-bestand. Publiceer het JSON-bestand ook naar GitHub voor de online versie.";
+        dialog.close();
+    } catch (error) {
+        window.alert("De extra info kon niet worden bewaard: " + error.message);
+    }
 }
 
 function refresh() {
