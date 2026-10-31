@@ -14,7 +14,7 @@ const POINT_COLORS = [
 ];
 
 const POSITION_LABELS = [
-  "", // text Position 1 - Steven & Nele
+  "1", // text Position 1 - Steven & Nele
   "", // text Position 2 - Dieter & Emily
   "", // text Position 3 - Bart & Anncik
   "", // text Position 4 - Nick & Isabel
