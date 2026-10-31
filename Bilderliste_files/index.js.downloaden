@@ -3,6 +3,8 @@ let canvas;
 let current = 0;
 let spur = false;
 let speed = 10;
+const ADMIN_PASSWORD = "Topteam";
+let adminUnlocked = false;
 
 
 function onclick(x, y) {
@@ -43,7 +45,133 @@ function onkey(e) {
     }
 }
 
+function getExtraInfoKey(imageIndex) {
+    return "iiamw-extra-info-" + imageIndex;
+}
+
+function unlockAdmin() {
+    const enteredPassword = window.prompt("Voer het admin-wachtwoord in:");
+    if (enteredPassword !== ADMIN_PASSWORD) {
+        if (enteredPassword !== null) {
+            window.alert("Onjuist wachtwoord.");
+        }
+        return;
+    }
+
+    adminUnlocked = true;
+    refresh();
+}
+
+function ensureExtraInfoControls() {
+    if (document.getElementById("extraInfoButton")) {
+        return;
+    }
+
+    const info = document.getElementById("bildinfo");
+    if (!info) {
+        return;
+    }
+
+    const button = document.createElement("button");
+    button.id = "extraInfoButton";
+    button.type = "button";
+    button.className = "distance-button";
+    button.innerText = "Extra info";
+    button.addEventListener("click", openExtraInfoDialog);
+    info.insertAdjacentElement("afterend", button);
+
+    const dialog = document.createElement("dialog");
+    dialog.id = "extraInfoDialog";
+    dialog.setAttribute("aria-labelledby", "extraInfoTitle");
+    dialog.style.width = "min(90vw, 520px)";
+    dialog.style.border = "1px solid #888";
+    dialog.style.padding = "20px";
+
+    const title = document.createElement("h2");
+    title.id = "extraInfoTitle";
+    title.innerText = "Extra info";
+
+    const textarea = document.createElement("textarea");
+    textarea.id = "extraInfoText";
+    textarea.setAttribute("aria-label", "Bijkomende info");
+    textarea.rows = 8;
+    textarea.style.width = "100%";
+    textarea.style.boxSizing = "border-box";
+
+    const actions = document.createElement("div");
+    actions.style.display = "flex";
+    actions.style.justifyContent = "flex-end";
+    actions.style.gap = "8px";
+    actions.style.marginTop = "12px";
+
+    const cancelButton = document.createElement("button");
+    cancelButton.type = "button";
+    cancelButton.innerText = "Annuleren";
+    cancelButton.addEventListener("click", function () {
+        dialog.close();
+    });
+
+    const saveButton = document.createElement("button");
+    saveButton.type = "button";
+    saveButton.innerText = "Bewaren";
+    saveButton.addEventListener("click", saveExtraInfo);
+
+    actions.append(cancelButton, saveButton);
+    dialog.append(title, textarea, actions);
+    document.body.appendChild(dialog);
+}
+
+function openExtraInfoDialog() {
+    const dialog = document.getElementById("extraInfoDialog");
+    const textarea = document.getElementById("extraInfoText");
+    const notes = JSON.parse(localStorage.getItem("iiamw-extra-info") || "{}");
+
+    dialog.dataset.imageIndex = current;
+    textarea.value = notes[getExtraInfoKey(current)] || "";
+    dialog.showModal();
+    textarea.focus();
+}
+
+function saveExtraInfo() {
+    const dialog = document.getElementById("extraInfoDialog");
+    const textarea = document.getElementById("extraInfoText");
+    const notes = JSON.parse(localStorage.getItem("iiamw-extra-info") || "{}");
+    const key = getExtraInfoKey(Number(dialog.dataset.imageIndex));
+
+    if (textarea.value.trim()) {
+        notes[key] = textarea.value;
+    } else {
+        delete notes[key];
+    }
+
+    localStorage.setItem("iiamw-extra-info", JSON.stringify(notes));
+    dialog.close();
+}
+
 function refresh() {
+    ensureExtraInfoControls();
+    const extraInfoButton = document.getElementById("extraInfoButton");
+    if (extraInfoButton) {
+        extraInfoButton.hidden = !adminUnlocked || current >= BILDER.length;
+    }
+    const distanceButton = document.getElementById("distanceButton");
+    if (distanceButton) {
+        distanceButton.hidden = !adminUnlocked || current >= BILDER.length;
+    }
+
+    const totalsPage = document.getElementById("totalsPage");
+    const canvasWrapper = document.querySelector(".canvas-wrapper");
+
+    if (current === BILDER.length) {
+        canvasWrapper.style.display = "none";
+        totalsPage.style.display = "block";
+        document.getElementById("bildinfo").innerText = "Totale afstanden";
+        renderTotalDistances();
+        return;
+    }
+
+    canvasWrapper.style.display = "flex";
+    totalsPage.style.display = "none";
     points = BILDER[current].points;
     document.getElementById("bildinfo").innerText = BILDER[current].drittel + " - " + BILDER[current].tanz + " - " + BILDER[current].name;
 
@@ -58,8 +186,71 @@ function refresh() {
     }
 }
 
+function getPositionDistance(startPoints, targetPoints, position) {
+    const start = getPoint(startPoints, position);
+    const target = getPoint(targetPoints, position);
+    return Math.hypot(target.x - start.x, target.y - start.y);
+}
+
+function renderTotalDistances() {
+    const list = document.getElementById("totalDistanceList");
+    list.innerHTML = "";
+
+    for (let position = 1; position <= numPositions; position++) {
+        let totalDistance = 0;
+        for (let image = 0; image < BILDER.length - 1; image++) {
+            totalDistance += getPositionDistance(BILDER[image].points, BILDER[image + 1].points, position);
+        }
+
+        const item = document.createElement("li");
+        item.innerText = "Positie " + position + ": " + totalDistance.toFixed(2) + " m";
+        item.style.color = POINT_COLORS[position - 1];
+        list.appendChild(item);
+    }
+}
+
+function openDistanceModal() {
+    const modal = document.getElementById("distanceModal");
+    const description = document.getElementById("distanceModalDescription");
+    const list = document.getElementById("distanceList");
+
+    list.innerHTML = "";
+    if (current >= BILDER.length - 1) {
+        description.innerText = "Er is geen volgend beeld.";
+    } else {
+        const currentPoints = BILDER[current].points;
+        const nextPoints = BILDER[current + 1].points;
+        description.innerText = "Van " + BILDER[current].name + " naar " + BILDER[current + 1].name + ".";
+
+        for (let position = 1; position <= numPositions; position++) {
+            const start = getPoint(currentPoints, position);
+            const target = getPoint(nextPoints, position);
+            const distance = Math.hypot(target.x - start.x, target.y - start.y);
+            const item = document.createElement("li");
+            item.innerText = "Positie " + position + ": " + distance.toFixed(2) + " m";
+            item.style.color = POINT_COLORS[position - 1];
+            list.appendChild(item);
+        }
+    }
+
+    modal.classList.add("open");
+}
+
+function closeDistanceModal() {
+    document.getElementById("distanceModal").classList.remove("open");
+}
+
+document.addEventListener("click", function (event) {
+    if (event.target.id === "distanceModal") {
+        closeDistanceModal();
+    }
+});
+
 function prevdrittel() {
     inAnimation = false;
+    if (current === BILDER.length) {
+        current--;
+    }
     if (current > 0) {
         if (BILDER[current].drittel !== BILDER[current - 1].drittel) {
             current--;
@@ -73,6 +264,9 @@ function prevdrittel() {
 
 function nextdrittel() {
     inAnimation = false;
+    if (current === BILDER.length) {
+        return;
+    }
     if (current < BILDER.length - 1) {
         while (current < BILDER.length - 1 && BILDER[current].drittel === BILDER[current + 1].drittel) {
             current++;
@@ -86,6 +280,9 @@ function nextdrittel() {
 
 function prevtanz() {
     inAnimation = false;
+    if (current === BILDER.length) {
+        current--;
+    }
     if (current > 0) {
         if (BILDER[current].tanz !== BILDER[current - 1].tanz) {
             current--;
@@ -99,6 +296,9 @@ function prevtanz() {
 
 function nexttanz() {
     inAnimation = false;
+    if (current === BILDER.length) {
+        return;
+    }
     if (current < BILDER.length - 1) {
         while (current < BILDER.length - 1 && BILDER[current].tanz === BILDER[current + 1].tanz) {
             current++;
@@ -119,7 +319,11 @@ function getPoint(positions, number) {
 }
 
 function animateNext(playmode) {
-    if (inAnimation || current >= BILDER.length - 1) {
+    if (inAnimation || current >= BILDER.length) {
+        return;
+    }
+    if (current === BILDER.length - 1) {
+        next();
         return;
     }
     let steps = 100;
@@ -256,6 +460,10 @@ function animationStepBoth(startO1, targetO1, startO2, targetO2, w, steps, playm
 
 function animatePrev(playmode) {
     if (inAnimation || current <= 0) {
+        return;
+    }
+    if (current === BILDER.length) {
+        prev();
         return;
     }
     let steps = 100;
