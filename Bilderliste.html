@@ -117,6 +117,79 @@ input[type=range][orient=vertical] {
     margin: 0;
 }
 
+    .distance-button {
+        margin-top: 8px;
+        background-color: var(--teamcolor);
+        border: none;
+        color: white;
+        padding: 6px 10px;
+        cursor: pointer;
+    }
+
+    .distance-modal {
+        display: none;
+        position: fixed;
+        z-index: 10;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        align-items: center;
+        justify-content: center;
+    }
+
+    .distance-modal.open {
+        display: flex;
+    }
+
+    .distance-modal-content {
+        width: min(420px, calc(100% - 32px));
+        max-height: 80vh;
+        overflow-y: auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-sizing: border-box;
+    }
+
+    .distance-modal-header {
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+        align-items: flex-start;
+    }
+
+    .distance-modal-close {
+        border: none;
+        background: transparent;
+        font-size: 1.5rem;
+        cursor: pointer;
+    }
+
+    .distance-list {
+        padding-left: 24px;
+        line-height: 1.7;
+    }
+
+    #totalsPage {
+        display: none;
+        width: min(620px, calc(100% - 32px));
+        margin: 24px auto;
+        padding: 24px;
+        box-sizing: border-box;
+        border: 1px solid #ddd;
+        background: white;
+    }
+
+    #totalsPage h1 {
+        margin-top: 0;
+        text-align: center;
+    }
+
+    .total-distance-list {
+        margin: 0;
+        padding-left: 32px;
+        line-height: 1.8;
+    }
+
 /* Stijl voor de nieuwe navigatiebalk */
 
 
@@ -227,7 +300,7 @@ input[type=range][orient=vertical] {
             <button onclick="animatePrev(true)" class="btn">&laquo;&laquo; Play to Start</button>
         </div>
 
-        <button class="nav-title">Is It A Man's World?</button>
+        <button class="nav-title" type="button" onclick="unlockAdmin()">Is It A Man's World?</button>
 
         <div class="nav-group">
             <button onclick="animateNext(true)" class="btn">Play to End &raquo;&raquo;</button>
@@ -242,7 +315,10 @@ input[type=range][orient=vertical] {
 <div class="canvas-wrapper">
     <div class="canvas-column">
         <div class="canvas-info">
-            <h2 id="bildinfo">1. Drittel - Wiener Walzer 1 - Anfang</h2>
+            <div>
+                <h2 id="bildinfo">1. Drittel - Wiener Walzer 1 - Anfang</h2>
+                <button id="distanceButton" type="button" class="distance-button" onclick="openDistanceModal()" hidden>Afstanden naar volgend beeld</button>
+            </div>
         </div>
         <canvas id="halle" height="545" width="545"></canvas>
     </div>
@@ -267,6 +343,22 @@ input[type=range][orient=vertical] {
             <h2>Volgend beeld</h2>
         </div>
         <canvas id="halle2" height="545" width="545"></canvas>
+    </div>
+</div>
+
+<section id="totalsPage" aria-labelledby="totalsPageTitle">
+    <h1 id="totalsPageTitle">Totale afstanden per positie</h1>
+    <ol id="totalDistanceList" class="total-distance-list"></ol>
+</section>
+
+<div id="distanceModal" class="distance-modal" role="dialog" aria-modal="true" aria-labelledby="distanceModalTitle">
+    <div class="distance-modal-content">
+        <div class="distance-modal-header">
+            <h2 id="distanceModalTitle">Afstanden per positie</h2>
+            <button class="distance-modal-close" onclick="closeDistanceModal()" aria-label="Sluiten">&times;</button>
+        </div>
+        <p id="distanceModalDescription"></p>
+        <ol id="distanceList" class="distance-list"></ol>
     </div>
 </div>
 
