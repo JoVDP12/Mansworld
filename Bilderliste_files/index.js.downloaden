@@ -350,7 +350,7 @@ function ensureExtraInfoControls() {
 
     const cancelButton = document.createElement("button");
     cancelButton.type = "button";
-    cancelButton.innerText = "Annuleren";
+    cancelButton.innerText = isLocalPage() ? "Annuleren" : "Sluiten";
     cancelButton.addEventListener("click", function () {
         dialog.close();
     });
