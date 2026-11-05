@@ -414,7 +414,7 @@ async function openExtraInfoDialog() {
     dialog.dataset.imageIndex = current;
     textarea.value = "";
     textarea.readOnly = true;
-    selectFileButton.hidden = Boolean(extraInfoFileHandle);
+    selectFileButton.hidden = !isLocalPage() || Boolean(extraInfoFileHandle);
     saveButton.hidden = true;
     notice.innerText = isLocalPage()
         ? "Je bent gekoppeld met de juiste Drive. Je kan je gegevens bewaren door op 'Bewaren' te klikken. Publiceer na eventuele wijzigingen ook het JSON-bestand naar GitHub om ze online zichtbaar te maken."
@@ -426,7 +426,7 @@ async function openExtraInfoDialog() {
         extraInfoNotes = notes;
         extraInfoNotesLoaded = true;
         extraInfoNotesLoadFailed = false;
-        selectFileButton.hidden = Boolean(extraInfoFileHandle);
+        selectFileButton.hidden = !isLocalPage() || Boolean(extraInfoFileHandle);
         updateExtraInfoButtonColor();
         if (notes) {
             textarea.value = notes[getExtraInfoKey(BILDER[current])] || "";
@@ -436,7 +436,7 @@ async function openExtraInfoDialog() {
             notice.innerText = "Om extra info te kunnen bewaren: kies het gedeelde bestand extra-info.json in Google Drive Libalforteformatie@gmail.com in folder 'Is it a man's world' om opmerkingen te kunnen lezen en te bewerken.";
         }
     } catch (error) {
-        selectFileButton.hidden = Boolean(extraInfoFileHandle);
+        selectFileButton.hidden = !isLocalPage() || Boolean(extraInfoFileHandle);
         if (isLocalPage()) {
             notice.innerText = "Het bestand kon niet worden geladen. Kies het gedeelde JSON-bestand opnieuw.";
             window.alert("De extra info kon niet worden geladen: " + error.message);
