@@ -19,6 +19,11 @@ let noclear = false;
 
 function next() {
     inAnimation = false;
+    if (showLogoPage) {
+        showLogoPage = false;
+        refresh();
+        return;
+    }
     if (current < BILDER.length - 1) {
         current++;
         refresh();
@@ -27,6 +32,14 @@ function next() {
 
 function prev() {
     inAnimation = false;
+    if (showLogoPage) {
+        return;
+    }
+    if (current === 0) {
+        showLogoPage = true;
+        refresh();
+        return;
+    }
     if (current > 0) {
         current--;
         refresh();
@@ -238,4 +251,3 @@ function coordToGrid(c) {
 function snap(p) {
     return Math.round(p / snapto) * snapto;
 }
-
