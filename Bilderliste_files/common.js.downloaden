@@ -107,7 +107,9 @@ window.onload = function () {
     if (transSlider) {
         transSlider.addEventListener('input', function() {
             Transparantie = this.value;
-            canvas2.style.opacity = Transparantie / 100;
+            const opacity = Transparantie / 100;
+            canvas2.style.opacity = opacity;
+            document.getElementById('nextBildinfo').style.opacity = opacity;
         });
     }
 	
