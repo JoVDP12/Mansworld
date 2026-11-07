@@ -324,6 +324,55 @@ function ensureExtraInfoControls() {
     button.addEventListener("click", openExtraInfoDialog);
     info.insertAdjacentElement("afterend", button);
 
+    const coordinatesButton = document.createElement("button");
+    coordinatesButton.id = "coordinatesButton";
+    coordinatesButton.type = "button";
+    coordinatesButton.className = "distance-button";
+    coordinatesButton.innerText = "Coördinaten";
+    coordinatesButton.style.marginLeft = "4px";
+    coordinatesButton.addEventListener("click", openCoordinatesDialog);
+    button.insertAdjacentElement("afterend", coordinatesButton);
+
+    const coordinatesDialog = document.createElement("dialog");
+    coordinatesDialog.id = "coordinatesDialog";
+    coordinatesDialog.setAttribute("aria-labelledby", "coordinatesTitle");
+    coordinatesDialog.style.width = "min(90vw, 420px)";
+    coordinatesDialog.style.border = "1px solid #888";
+    coordinatesDialog.style.padding = "20px";
+
+    const coordinatesTitle = document.createElement("h2");
+    coordinatesTitle.id = "coordinatesTitle";
+    coordinatesTitle.innerText = "Coördinaten";
+
+    const coordinatesDescription = document.createElement("p");
+    coordinatesDescription.id = "coordinatesDescription";
+
+    const coordinatesList = document.createElement("ol");
+    coordinatesList.id = "coordinatesList";
+    coordinatesList.className = "distance-list";
+
+    const coordinatesActions = document.createElement("div");
+    coordinatesActions.style.display = "flex";
+    coordinatesActions.style.justifyContent = "flex-end";
+    coordinatesActions.style.gap = "8px";
+    coordinatesActions.style.marginTop = "12px";
+
+    const coordinatesCancelButton = document.createElement("button");
+    coordinatesCancelButton.type = "button";
+    coordinatesCancelButton.innerText = "Annuleren";
+    coordinatesCancelButton.addEventListener("click", function () {
+        coordinatesDialog.close();
+    });
+
+    const coordinatesSaveButton = document.createElement("button");
+    coordinatesSaveButton.type = "button";
+    coordinatesSaveButton.innerText = "Opslaan in iiamw.js";
+    coordinatesSaveButton.addEventListener("click", saveCoordinates);
+
+    coordinatesActions.append(coordinatesCancelButton, coordinatesSaveButton);
+    coordinatesDialog.append(coordinatesTitle, coordinatesDescription, coordinatesList, coordinatesActions);
+    document.body.appendChild(coordinatesDialog);
+
     const dialog = document.createElement("dialog");
     dialog.id = "extraInfoDialog";
     dialog.setAttribute("aria-labelledby", "extraInfoTitle");
@@ -522,6 +571,10 @@ function refresh() {
     if (extraInfoButton) {
         extraInfoButton.hidden = !adminUnlocked || showLogoPage || current >= BILDER.length;
     }
+    const coordinatesButton = document.getElementById("coordinatesButton");
+    if (coordinatesButton) {
+        coordinatesButton.hidden = !adminUnlocked || showLogoPage || current >= BILDER.length;
+    }
     updateExtraInfoButtonColor();
     const distanceButton = document.getElementById("distanceButton");
     if (distanceButton) {
@@ -584,6 +637,259 @@ function refresh() {
         drawBoard(canvas2, BILDER[current + 1].points);
     } else {
         drawBoard(canvas2, null); // Maak de vloer leeg/verwijder poppetjes als we aan het einde zijn
+    }
+}
+
+function openCoordinatesDialog() {
+    const image = BILDER[current];
+    const description = document.getElementById("coordinatesDescription");
+    const list = document.getElementById("coordinatesList");
+
+    description.innerText = "Pas de coördinaten voor " + image.name + " aan. Opslaan werkt het lokale iiamw.js-bestand bij.";
+    list.innerHTML = "";
+    for (const point of image.points) {
+        const item = document.createElement("li");
+        item.style.color = POINT_COLORS[point.p - 1];
+
+        const row = document.createElement("div");
+        row.style.display = "flex";
+        row.style.alignItems = "center";
+        row.style.gap = "8px";
+
+        const label = document.createElement("span");
+        label.innerText = "Positie " + point.p;
+        label.style.minWidth = "90px";
+
+        const xInput = document.createElement("input");
+        xInput.type = "number";
+        xInput.step = "any";
+        xInput.required = true;
+        xInput.value = point.x;
+        xInput.style.width = "70px";
+        xInput.style.boxSizing = "border-box";
+        xInput.dataset.position = point.p;
+        xInput.dataset.coordinate = "x";
+        xInput.setAttribute("aria-label", "Positie " + point.p + " x-coördinaat");
+
+        const yInput = document.createElement("input");
+        yInput.type = "number";
+        yInput.step = "any";
+        yInput.required = true;
+        yInput.value = point.y;
+        yInput.style.width = "70px";
+        yInput.style.boxSizing = "border-box";
+        yInput.dataset.position = point.p;
+        yInput.dataset.coordinate = "y";
+        yInput.setAttribute("aria-label", "Positie " + point.p + " y-coördinaat");
+
+        row.append(label, "x:", xInput, "y:", yInput);
+        item.appendChild(row);
+        list.appendChild(item);
+    }
+
+    document.getElementById("coordinatesDialog").showModal();
+}
+
+function findMatchingDelimiter(source, openIndex) {
+    const opening = source[openIndex];
+    const closing = opening === "[" ? "]" : "}";
+    let depth = 0;
+    let quote = null;
+    let lineComment = false;
+    let blockComment = false;
+
+    for (let index = openIndex; index < source.length; index++) {
+        const character = source[index];
+        const nextCharacter = source[index + 1];
+
+        if (lineComment) {
+            if (character === "\n") lineComment = false;
+            continue;
+        }
+        if (blockComment) {
+            if (character === "*" && nextCharacter === "/") {
+                blockComment = false;
+                index++;
+            }
+            continue;
+        }
+        if (quote) {
+            if (character === "\\") {
+                index++;
+            } else if (character === quote) {
+                quote = null;
+            }
+            continue;
+        }
+        if (character === "/" && nextCharacter === "/") {
+            lineComment = true;
+            index++;
+            continue;
+        }
+        if (character === "/" && nextCharacter === "*") {
+            blockComment = true;
+            index++;
+            continue;
+        }
+        if (character === '"' || character === "'" || character === "`") {
+            quote = character;
+            continue;
+        }
+        if (character === opening) {
+            depth++;
+        } else if (character === closing) {
+            depth--;
+            if (depth === 0) return index;
+        }
+    }
+
+    throw new Error("De beeldenlijst in iiamw.js is onvolledig.");
+}
+
+function skipArrayTrivia(source, index, end) {
+    while (index < end) {
+        if (/\s|,/.test(source[index])) {
+            index++;
+        } else if (source[index] === "/" && source[index + 1] === "/") {
+            index = source.indexOf("\n", index + 2);
+            if (index === -1) return end;
+        } else if (source[index] === "/" && source[index + 1] === "*") {
+            const commentEnd = source.indexOf("*/", index + 2);
+            if (commentEnd === -1) throw new Error("Een opmerking in iiamw.js is niet afgesloten.");
+            index = commentEnd + 2;
+        } else {
+            break;
+        }
+    }
+    return index;
+}
+
+function replacePointCoordinates(pointSource, point) {
+    const xPattern = /("x"\s*:\s*)[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/;
+    const yPattern = /("y"\s*:\s*)[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/;
+    if (!xPattern.test(pointSource) || !yPattern.test(pointSource)) {
+        throw new Error("Een coördinaat in iiamw.js kon niet worden gevonden.");
+    }
+    return pointSource
+        .replace(xPattern, "$1" + point.x)
+        .replace(yPattern, "$1" + point.y);
+}
+
+function replaceImageCoordinatesInSource(source, imageIndex, updatedPoints) {
+    const declaration = /const\s+BILDER\s*=\s*\[/g;
+    const match = declaration.exec(source);
+    if (!match) {
+        throw new Error("De BILDER-lijst is niet gevonden in iiamw.js.");
+    }
+
+    const arrayStart = source.indexOf("[", match.index);
+    const arrayEnd = findMatchingDelimiter(source, arrayStart);
+    const imageRanges = [];
+    let index = arrayStart + 1;
+    while ((index = skipArrayTrivia(source, index, arrayEnd)) < arrayEnd) {
+        if (source[index] !== "{") {
+            throw new Error("De beeldenlijst in iiamw.js heeft een onverwacht formaat.");
+        }
+        const imageEnd = findMatchingDelimiter(source, index);
+        imageRanges.push([index, imageEnd + 1]);
+        index = imageEnd + 1;
+    }
+
+    if (imageRanges.length !== BILDER.length || !imageRanges[imageIndex]) {
+        throw new Error("De beeldenlijst in iiamw.js komt niet overeen met de geladen beelden.");
+    }
+
+    const [imageStart, imageEnd] = imageRanges[imageIndex];
+    const imageSource = source.slice(imageStart, imageEnd);
+    const orderMatch = /"order"\s*:\s*"([^"]+)"/.exec(imageSource);
+    if (!orderMatch || orderMatch[1] !== String(BILDER[imageIndex].order)) {
+        throw new Error("Het gekozen bestand bevat niet de verwachte beeldenlijst.");
+    }
+
+    const pointPattern = /\{\s*"x"\s*:/g;
+    const replacements = [];
+    let pointMatch;
+    while ((pointMatch = pointPattern.exec(imageSource))) {
+        const pointStart = pointMatch.index;
+        const pointEnd = findMatchingDelimiter(imageSource, pointStart) + 1;
+        const pointSource = imageSource.slice(pointStart, pointEnd);
+        const numberMatch = /"p"\s*:\s*(\d+)/.exec(pointSource);
+        const point = numberMatch && updatedPoints.find(item => item.p === Number(numberMatch[1]));
+        if (point) {
+            replacements.push([
+                imageStart + pointStart,
+                imageStart + pointEnd,
+                replacePointCoordinates(pointSource, point)
+            ]);
+        }
+        pointPattern.lastIndex = pointEnd;
+    }
+
+    if (replacements.length !== updatedPoints.length) {
+        throw new Error("Niet alle positiecoördinaten zijn gevonden in iiamw.js.");
+    }
+
+    for (const [start, end, replacement] of replacements.reverse()) {
+        source = source.slice(0, start) + replacement + source.slice(end);
+    }
+    return source;
+}
+
+async function saveCoordinates() {
+    const list = document.getElementById("coordinatesList");
+    const inputs = Array.from(list.querySelectorAll("input"));
+    const updatedPoints = BILDER[current].points.map(point => {
+        const xInput = inputs.find(input =>
+            Number(input.dataset.position) === point.p && input.dataset.coordinate === "x"
+        );
+        const yInput = inputs.find(input =>
+            Number(input.dataset.position) === point.p && input.dataset.coordinate === "y"
+        );
+        const x = xInput && xInput.value.trim() !== "" ? Number(xInput.value) : NaN;
+        const y = yInput && yInput.value.trim() !== "" ? Number(yInput.value) : NaN;
+        return { ...point, x, y };
+    });
+
+    if (updatedPoints.some(point => !Number.isFinite(point.x) || !Number.isFinite(point.y))) {
+        window.alert("Vul voor elke positie een geldig getal in voor x en y.");
+        return;
+    }
+
+    if (!window.showOpenFilePicker) {
+        window.alert("Bestanden bewerken wordt niet ondersteund. Open de pagina in Chrome of Edge.");
+        return;
+    }
+
+    try {
+        const [fileHandle] = await window.showOpenFilePicker({
+            multiple: false,
+            types: [{
+                description: "iiamw.js-bestand",
+                accept: { "text/javascript": [".js", ".downloaden"] }
+            }]
+        });
+        let permission = await fileHandle.queryPermission({ mode: "readwrite" });
+        if (permission !== "granted") {
+            permission = await fileHandle.requestPermission({ mode: "readwrite" });
+        }
+        if (permission !== "granted") {
+            throw new Error("Geen toestemming om iiamw.js te bewerken.");
+        }
+
+        const file = await fileHandle.getFile();
+        const source = await file.text();
+        const updatedSource = replaceImageCoordinatesInSource(source, current, updatedPoints);
+        const writable = await fileHandle.createWritable();
+        await writable.write(updatedSource);
+        await writable.close();
+
+        BILDER[current].points = updatedPoints;
+        refresh();
+        document.getElementById("coordinatesDialog").close();
+    } catch (error) {
+        if (error.name !== "AbortError") {
+            window.alert("De coördinaten konden niet in iiamw.js worden opgeslagen: " + error.message);
+        }
     }
 }
 
