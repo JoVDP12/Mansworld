@@ -347,6 +347,20 @@ function ensureExtraInfoControls() {
     const coordinatesDescription = document.createElement("p");
     coordinatesDescription.id = "coordinatesDescription";
 
+    const sheetTitleLabel = document.createElement("label");
+    sheetTitleLabel.htmlFor = "coordinatesSheetTitle";
+    sheetTitleLabel.innerText = "Titel van het blad";
+    sheetTitleLabel.style.display = "block";
+    sheetTitleLabel.style.marginBottom = "12px";
+
+    const sheetTitleInput = document.createElement("input");
+    sheetTitleInput.id = "coordinatesSheetTitle";
+    sheetTitleInput.type = "text";
+    sheetTitleInput.required = true;
+    sheetTitleInput.style.width = "100%";
+    sheetTitleInput.style.boxSizing = "border-box";
+    sheetTitleLabel.appendChild(sheetTitleInput);
+
     const coordinatesList = document.createElement("ol");
     coordinatesList.id = "coordinatesList";
     coordinatesList.className = "distance-list";
@@ -370,7 +384,7 @@ function ensureExtraInfoControls() {
     coordinatesSaveButton.addEventListener("click", saveCoordinates);
 
     coordinatesActions.append(coordinatesCancelButton, coordinatesSaveButton);
-    coordinatesDialog.append(coordinatesTitle, coordinatesDescription, coordinatesList, coordinatesActions);
+    coordinatesDialog.append(coordinatesTitle, coordinatesDescription, sheetTitleLabel, coordinatesList, coordinatesActions);
     document.body.appendChild(coordinatesDialog);
 
     const dialog = document.createElement("dialog");
@@ -643,9 +657,10 @@ function refresh() {
 function openCoordinatesDialog() {
     const image = BILDER[current];
     const description = document.getElementById("coordinatesDescription");
+    document.getElementById("coordinatesSheetTitle").value = image.name;
     const list = document.getElementById("coordinatesList");
 
-    description.innerText = "Pas de coördinaten voor " + image.name + " aan. Opslaan werkt het lokale iiamw.js-bestand bij.";
+    description.innerText = "Pas de titel en coördinaten aan. Opslaan werkt het lokale iiamw.js-bestand bij.";
     list.innerHTML = "";
     for (const point of image.points) {
         const item = document.createElement("li");
@@ -775,7 +790,7 @@ function replacePointCoordinates(pointSource, point) {
         .replace(yPattern, "$1" + point.y);
 }
 
-function replaceImageCoordinatesInSource(source, imageIndex, updatedPoints) {
+function replaceImageCoordinatesInSource(source, imageIndex, updatedName, updatedPoints) {
     const declaration = /const\s+BILDER\s*=\s*\[/g;
     const match = declaration.exec(source);
     if (!match) {
@@ -806,19 +821,27 @@ function replaceImageCoordinatesInSource(source, imageIndex, updatedPoints) {
         throw new Error("Het gekozen bestand bevat niet de verwachte beeldenlijst.");
     }
 
+    const namePattern = /("name"\s*:\s*)("(?:\\.|[^"\\])*")/;
+    if (!namePattern.test(imageSource)) {
+        throw new Error("De titel van het beeld kon niet worden gevonden in iiamw.js.");
+    }
+    let updatedImageSource = imageSource.replace(namePattern, function (_match, property) {
+        return property + JSON.stringify(updatedName);
+    });
+
     const pointPattern = /\{\s*"x"\s*:/g;
     const replacements = [];
     let pointMatch;
-    while ((pointMatch = pointPattern.exec(imageSource))) {
+    while ((pointMatch = pointPattern.exec(updatedImageSource))) {
         const pointStart = pointMatch.index;
-        const pointEnd = findMatchingDelimiter(imageSource, pointStart) + 1;
-        const pointSource = imageSource.slice(pointStart, pointEnd);
+        const pointEnd = findMatchingDelimiter(updatedImageSource, pointStart) + 1;
+        const pointSource = updatedImageSource.slice(pointStart, pointEnd);
         const numberMatch = /"p"\s*:\s*(\d+)/.exec(pointSource);
         const point = numberMatch && updatedPoints.find(item => item.p === Number(numberMatch[1]));
         if (point) {
             replacements.push([
-                imageStart + pointStart,
-                imageStart + pointEnd,
+                pointStart,
+                pointEnd,
                 replacePointCoordinates(pointSource, point)
             ]);
         }
@@ -830,12 +853,18 @@ function replaceImageCoordinatesInSource(source, imageIndex, updatedPoints) {
     }
 
     for (const [start, end, replacement] of replacements.reverse()) {
-        source = source.slice(0, start) + replacement + source.slice(end);
+        updatedImageSource = updatedImageSource.slice(0, start) + replacement + updatedImageSource.slice(end);
     }
-    return source;
+    return source.slice(0, imageStart) + updatedImageSource + source.slice(imageEnd);
 }
 
 async function saveCoordinates() {
+    const updatedName = document.getElementById("coordinatesSheetTitle").value.trim();
+    if (!updatedName) {
+        window.alert("Vul een titel voor het blad in.");
+        return;
+    }
+
     const list = document.getElementById("coordinatesList");
     const inputs = Array.from(list.querySelectorAll("input"));
     const updatedPoints = BILDER[current].points.map(point => {
@@ -878,17 +907,18 @@ async function saveCoordinates() {
 
         const file = await fileHandle.getFile();
         const source = await file.text();
-        const updatedSource = replaceImageCoordinatesInSource(source, current, updatedPoints);
+        const updatedSource = replaceImageCoordinatesInSource(source, current, updatedName, updatedPoints);
         const writable = await fileHandle.createWritable();
         await writable.write(updatedSource);
         await writable.close();
 
+        BILDER[current].name = updatedName;
         BILDER[current].points = updatedPoints;
         refresh();
         document.getElementById("coordinatesDialog").close();
     } catch (error) {
         if (error.name !== "AbortError") {
-            window.alert("De coördinaten konden niet in iiamw.js worden opgeslagen: " + error.message);
+            window.alert("De titel en coördinaten konden niet in iiamw.js worden opgeslagen: " + error.message);
         }
     }
 }
