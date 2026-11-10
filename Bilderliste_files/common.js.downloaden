@@ -1,3 +1,4 @@
+// Gedeelde tekeninstellingen en afmetingen van de twee dansvloeren.
 let scale = 0;
 let offset = 0;
 let textsize = 0;
@@ -17,6 +18,7 @@ let rectWidth;
 let personScale = 1;  // Grootte van personen op het grid (0.7 = 70% van normale grootte)
 let noclear = false;
 
+// Schakelt naar het volgende beeld; de eerste stap vanaf het logo opent de lijst.
 function next() {
     inAnimation = false;
     if (showLogoPage) {
@@ -30,6 +32,7 @@ function next() {
     }
 }
 
+// Schakelt terug naar het vorige beeld of, vanaf het eerste beeld, naar het logo.
 function prev() {
     inAnimation = false;
     if (showLogoPage) {
@@ -46,6 +49,7 @@ function prev() {
     }
 }
 
+// Berekent een passende vloergrootte voor het scherm en tekent daarna opnieuw.
 function resizeCanvases() {
     // Reset offset en scale om opnieuw te berekenen
     offset = 0;
@@ -86,6 +90,7 @@ function resizeCanvases() {
 }
 
 
+// Verbindt de bediening en toetsen met de canvassen zodra de pagina klaar is.
 window.onload = function () {
     document.querySelector(':root').style.setProperty('--teamcolor', COLOR);
 
@@ -131,11 +136,14 @@ window.onload = function () {
     resizeCanvases();
 };
 
+// Tekent het raster, de asnummers en de beter zichtbare rode nul-lijnen.
 function drawFloor(context) {
     // Gebruik de actuele breedte en hoogte van de context i.p.v. het globale canvas object
+    context.save();
     context.clearRect(0, 0, context.canvas.width, context.canvas.height);
     context.beginPath();
 
+    context.lineWidth = 1;
     context.font = textsize + "px Cambria";
     context.textAlign = "left";
 	//context.textAlign = "center";
@@ -165,11 +173,22 @@ function drawFloor(context) {
     context.moveTo(0 + offset, 0.5 + coordToGrid(0));
     context.lineTo(bw - offset, 0.5 + coordToGrid(0));
 
-    context.strokeStyle = "red";
+    context.lineWidth = 5;
+    context.strokeStyle = "white";
     context.stroke();
+
+    context.beginPath();
+    context.moveTo(0.5 + coordToGrid(0), 0 + offset);
+    context.lineTo(0.5 + coordToGrid(0), bh - offset);
+    context.moveTo(0 + offset, 0.5 + coordToGrid(0));
+    context.lineTo(bw - offset, 0.5 + coordToGrid(0));
+    context.lineWidth = 2.5; //dikte van de aslijn
+    context.strokeStyle = "red"; //kleur van de aslijn
+    context.stroke();
+    context.restore();
 }
 
-// drawBoard is nu 'doelbewust': het neemt het canvas en de juiste array met punten aan
+// Tekent eerst een lege vloer en plaatst daarna de opgegeven posities erop.
 function drawBoard(targetCanvas, targetPoints) {
     if (!targetCanvas) return;
     const context = targetCanvas.getContext("2d");
@@ -185,6 +204,7 @@ function drawBoard(targetCanvas, targetPoints) {
 }
 
 
+// Tekent één positie als een gekleurde ruit met het positienummer erin.
 function drawPoint(context, point) {
     if(point.dx !== undefined && point.dy !== undefined && (point.dx !== point.x || point.dy !== point.y)){
         var rectX = coordToGrid(point.dx);
@@ -216,6 +236,7 @@ function drawPoint(context, point) {
     context.fillText(label, rectX, rectY);
 }
 
+// Tekent bij een tussenstap ook de donkere figuur die de beweging aanduidt.
 function drawMan(context, point) {
     var rectX = coordToGrid(point.x);
     var rectY = coordToGrid(point.y);
@@ -242,14 +263,17 @@ function drawMan(context, point) {
 }
 
 
+// Rekent een pixelpositie op het canvas om naar een coördinaat op de dansvloer.
 function gridToCoord(g) {
     return (g - 2 * offset - 0.5) / scale - FLOORSIZE;
 }
 
+// Rekent een dansvloercoördinaat om naar de bijbehorende pixelpositie.
 function coordToGrid(c) {
     return (c + FLOORSIZE) * scale + 2 * offset + 0.5;
 }
 
+// Rondt een waarde af op het ingestelde stapinterval.
 function snap(p) {
     return Math.round(p / snapto) * snapto;
 }

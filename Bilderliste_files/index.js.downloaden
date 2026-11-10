@@ -1,3 +1,4 @@
+// Houdt bij welk beeld zichtbaar is en welke hulpmiddelen de admin gebruikt.
 let points = [];
 let canvas;
 let current = 0;
@@ -14,6 +15,7 @@ let extraInfoNotesLoaded = false;
 let extraInfoNotesLoadFailed = false;
 let extraInfoNotesLoadPromise = null;
 
+// Zodra het logo geladen is, wordt het startscherm opnieuw getekend.
 logoImage.onload = function () {
     if (canvas1 && showLogoPage) {
         refresh();
@@ -22,12 +24,14 @@ logoImage.onload = function () {
 logoImage.src = new URL("../Logo.png", document.currentScript.src).href;
 
 
+// Invoerpunten voor canvasbediening; momenteel zijn klikken en bewegen leeg.
 function onclick(x, y) {
 }
 
 let touchstartX = 0
 let touchstartY = 0
 
+// Onthoud het begin en einde van een veegbeweging om door beelden te bladeren.
 document.addEventListener('touchstart', e => {
     touchstartX = e.changedTouches[0].screenX;
     touchstartY = e.changedTouches[0].screenY;
@@ -46,6 +50,7 @@ function onmove(x, y) {
 
 }
 
+// Gebruik de pijltjestoetsen om een beeld vooruit of terug te gaan.
 function onkey(e) {
     e = e || window.event;
 
@@ -60,6 +65,7 @@ function onkey(e) {
     }
 }
 
+// Maakt een vaste sleutel voor notities, zodat die aan het juiste beeld blijven.
 function getExtraInfoKey(image) {
     return "iiamw-extra-info-" + Number(image.order);
 }
@@ -68,6 +74,7 @@ function isLocalPage() {
     return window.location.protocol === "file:";
 }
 
+// Controleert notities en zet oudere beeldsleutels om naar de huidige vorm.
 function parseExtraInfoNotes(notes) {
     if (!notes || typeof notes !== "object" || Array.isArray(notes)) {
         throw new Error("Het JSON-bestand heeft niet het verwachte formaat.");
@@ -107,18 +114,21 @@ function parseExtraInfoNotes(notes) {
     return notes;
 }
 
+// Leest het gekozen JSON-bestand en controleert de inhoud.
 async function readExtraInfoFile(fileHandle) {
     const file = await fileHandle.getFile();
     const notes = JSON.parse(await file.text());
     return parseExtraInfoNotes(notes);
 }
 
+// Schrijft alle notities terug naar het gekozen JSON-bestand.
 async function writeExtraInfoFile(fileHandle, notes) {
     const writable = await fileHandle.createWritable();
     await writable.write(JSON.stringify(notes, null, 2));
     await writable.close();
 }
 
+// Laadt notities uit het gekozen lokale bestand of uit de online versie.
 async function loadExtraInfoNotes() {
     if (extraInfoFileHandle) {
         const permission = await extraInfoFileHandle.queryPermission({ mode: "readwrite" });
@@ -143,6 +153,7 @@ async function loadExtraInfoNotes() {
     return null;
 }
 
+// Laat de gebruiker het gedeelde notitiebestand kiezen en machtigt bewerking.
 async function chooseExtraInfoFile() {
     if (!window.showOpenFilePicker) {
         throw new Error("Bestanden kiezen wordt niet ondersteund. Open de pagina in Chrome of Edge.");
@@ -168,6 +179,7 @@ async function chooseExtraInfoFile() {
     return fileHandle;
 }
 
+// Maakt het admin-inlogvenster één keer aan en controleert het wachtwoord.
 function ensureAdminDialog() {
     let dialog = document.getElementById("adminLoginDialog");
     if (dialog) {
@@ -300,12 +312,14 @@ function ensureAdminDialog() {
     return dialog;
 }
 
+// Opent het admin-inlogvenster zodat de beheerknoppen beschikbaar komen.
 function unlockAdmin() {
     const dialog = ensureAdminDialog();
     dialog.showModal();
     document.getElementById("adminPassword").focus();
 }
 
+// Maakt de extra-info- en coördinatenvensters met hun bijbehorende knoppen.
 function ensureExtraInfoControls() {
     if (document.getElementById("extraInfoButton")) {
         return;
@@ -438,6 +452,7 @@ function ensureExtraInfoControls() {
     document.body.appendChild(dialog);
 }
 
+// Laat met de knopkleur zien of het huidige beeld al extra info heeft.
 function updateExtraInfoButtonColor() {
     const button = document.getElementById("extraInfoButton");
     if (!button || current >= BILDER.length) {
@@ -476,6 +491,7 @@ function updateExtraInfoButtonColor() {
         : EXTRA_INFO_EMPTY_COLOR;
 }
 
+// Opent de notities van het huidige beeld en bepaalt of ze bewerkbaar zijn.
 async function openExtraInfoDialog() {
     const dialog = document.getElementById("extraInfoDialog");
     const textarea = document.getElementById("extraInfoText");
@@ -519,6 +535,7 @@ async function openExtraInfoDialog() {
     textarea.focus();
 }
 
+// Koppelt het juiste Drive-JSON-bestand aan de extra-info-editor.
 async function selectExtraInfoFile() {
     const dialog = document.getElementById("extraInfoDialog");
     const textarea = document.getElementById("extraInfoText");
@@ -543,6 +560,7 @@ async function selectExtraInfoFile() {
     }
 }
 
+// Bewaart de aangepaste notitie van het huidige beeld.
 async function saveExtraInfo() {
     const dialog = document.getElementById("extraInfoDialog");
     const textarea = document.getElementById("extraInfoText");
@@ -579,6 +597,7 @@ async function saveExtraInfo() {
     }
 }
 
+// Werkt knoppen, titels, canvassen en totalen bij na een navigatiestap.
 function refresh() {
     ensureExtraInfoControls();
     const extraInfoButton = document.getElementById("extraInfoButton");
@@ -654,6 +673,7 @@ function refresh() {
     }
 }
 
+// Vult de editor met de titel en coördinaten van het huidige beeld.
 function openCoordinatesDialog() {
     const image = BILDER[current];
     const description = document.getElementById("coordinatesDescription");
@@ -705,6 +725,7 @@ function openCoordinatesDialog() {
     document.getElementById("coordinatesDialog").showModal();
 }
 
+// Zoekt het sluitende haakje zonder te stoppen bij tekst of codecommentaar.
 function findMatchingDelimiter(source, openIndex) {
     const opening = source[openIndex];
     const closing = opening === "[" ? "]" : "}";
@@ -761,6 +782,7 @@ function findMatchingDelimiter(source, openIndex) {
     throw new Error("De beeldenlijst in iiamw.js is onvolledig.");
 }
 
+// Slaat spaties, komma's en commentaar over bij het lezen van de beeldenlijst.
 function skipArrayTrivia(source, index, end) {
     while (index < end) {
         if (/\s|,/.test(source[index])) {
@@ -779,6 +801,7 @@ function skipArrayTrivia(source, index, end) {
     return index;
 }
 
+// Vervangt alleen de x- en y-waarden van één positie in de broncode.
 function replacePointCoordinates(pointSource, point) {
     const xPattern = /("x"\s*:\s*)[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/;
     const yPattern = /("y"\s*:\s*)[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][+-]?\d+)?/;
@@ -790,6 +813,7 @@ function replacePointCoordinates(pointSource, point) {
         .replace(yPattern, "$1" + point.y);
 }
 
+// Past in iiamw.js alleen de titel en posities van één gekozen beeld aan.
 function replaceImageCoordinatesInSource(source, imageIndex, updatedName, updatedPoints) {
     const declaration = /const\s+BILDER\s*=\s*\[/g;
     const match = declaration.exec(source);
@@ -858,6 +882,7 @@ function replaceImageCoordinatesInSource(source, imageIndex, updatedName, update
     return source.slice(0, imageStart) + updatedImageSource + source.slice(imageEnd);
 }
 
+// Vraagt toestemming en bewaart de nieuwe titel en coördinaten in iiamw.js.
 async function saveCoordinates() {
     const updatedName = document.getElementById("coordinatesSheetTitle").value.trim();
     if (!updatedName) {
@@ -923,12 +948,14 @@ async function saveCoordinates() {
     }
 }
 
+// Berekent de afstand die één positie tussen twee beelden aflegt.
 function getPositionDistance(startPoints, targetPoints, position) {
     const start = getPoint(startPoints, position);
     const target = getPoint(targetPoints, position);
     return Math.hypot(target.x - start.x, target.y - start.y);
 }
 
+// Telt per positie de afstanden van alle opeenvolgende beelden bij elkaar op.
 function renderTotalDistances() {
     const list = document.getElementById("totalDistanceList");
     list.innerHTML = "";
@@ -946,6 +973,7 @@ function renderTotalDistances() {
     }
 }
 
+// Toont per positie de afstand van het huidige beeld naar het volgende.
 function openDistanceModal() {
     const modal = document.getElementById("distanceModal");
     const description = document.getElementById("distanceModalDescription");
@@ -981,6 +1009,9 @@ function openDistanceModal() {
                 label += " (min)";
             }
             item.innerText = "Positie " + position + ": " + distance.toFixed(2) + " m" + label;
+            if (distance === maxDistance || distance === minDistance) {
+                item.style.fontWeight = "bold";
+            }
             item.style.color = POINT_COLORS[position - 1];
             list.appendChild(item);
         }
@@ -989,16 +1020,19 @@ function openDistanceModal() {
     modal.classList.add("open");
 }
 
+// Sluit het venster met afstanden.
 function closeDistanceModal() {
     document.getElementById("distanceModal").classList.remove("open");
 }
 
+// Sluit het afstandsvenster als er naast de inhoud op de achtergrond wordt geklikt.
 document.addEventListener("click", function (event) {
     if (event.target.id === "distanceModal") {
         closeDistanceModal();
     }
 });
 
+// Springt naar het begin van het vorige deel.
 function prevdrittel() {
     inAnimation = false;
     if (current === BILDER.length) {
@@ -1015,6 +1049,7 @@ function prevdrittel() {
     }
 }
 
+// Springt naar het begin van het volgende deel.
 function nextdrittel() {
     inAnimation = false;
     if (showLogoPage) {
@@ -1035,6 +1070,7 @@ function nextdrittel() {
     }
 }
 
+// Springt naar het begin van de vorige dans.
 function prevtanz() {
     inAnimation = false;
     if (current === BILDER.length) {
@@ -1051,6 +1087,7 @@ function prevtanz() {
     }
 }
 
+// Springt naar het begin van de volgende dans.
 function nexttanz() {
     inAnimation = false;
     if (showLogoPage) {
@@ -1071,6 +1108,7 @@ function nexttanz() {
     }
 }
 
+// Vindt de coördinaten van het gevraagde positienummer.
 function getPoint(positions, number) {
     for (const i in positions) {
         if (positions[i].p == number) {
@@ -1079,6 +1117,7 @@ function getPoint(positions, number) {
     }
 }
 
+// Beweegt beide canvassen naar het volgende beeld; playmode herhaalt de beweging.
 function animateNext(playmode) {
     if (inAnimation) {
         return;
@@ -1154,7 +1193,7 @@ function animateNext(playmode) {
     animationStepBoth(startO1, targetO1, startO2, targetO2, 0, steps, playmode);
 }
 
-// Hulpfunctie om vloeiende puntberekeningen overzichtelijk te houden
+// Berekent tussenliggende coördinaten zodat een verplaatsing vloeiend verloopt.
 function calculateInterpolated(startO, targetO, w, steps) {
     let pts = [];
     for (let i = 0; i < numPositions; i++) {
@@ -1180,7 +1219,7 @@ function calculateInterpolated(startO, targetO, w, steps) {
     return pts;
 }
 
-// Verwerkt frames synchroon op zowel het linker als het rechter canvas
+// Tekent iedere animatiestap tegelijk op het huidige en volgende canvas.
 function animationStepBoth(startO1, targetO1, startO2, targetO2, w, steps, playmode) {
     if (!inAnimation) return;
     
@@ -1229,6 +1268,7 @@ function animationStepBoth(startO1, targetO1, startO2, targetO2, w, steps, playm
     setTimeout(() => animationStepBoth(startO1, targetO1, startO2, targetO2, w + 1, steps, playmode), 16);
 }
 
+// Beweegt beide canvassen terug naar het vorige beeld.
 function animatePrev(playmode) {
     if (inAnimation || showLogoPage) {
         return;
@@ -1298,6 +1338,7 @@ function animatePrev(playmode) {
 }
 
 // Speciale loop functie voor het achteruit animeren
+// Tekent iedere teruggaande animatiestap op beide canvassen.
 function animationStepBothPrev(startO1, targetO1, startO2, targetO2, w, steps, playmode) {
     if (!inAnimation) return;
     if (w >= steps) {

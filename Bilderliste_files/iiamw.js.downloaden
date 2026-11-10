@@ -1,7 +1,9 @@
+// Instellingen en beeldgegevens voor de dansvloer; afstanden zijn in vloereenheden.
 const FLOORSIZE = 7;
 const COLOR = "#7990ec";
 let positionScale = 0.7;  // Grootte van positions op het grid (0.7 = 70% van normale grootte)
 
+// Elke positie heeft een vaste kleur; die kleur wordt ook in de afstandslijsten gebruikt.
 const POINT_COLORS = [
   "#0000FF",  // Position 1 - Blauw
   "#FF8000",  // Position 2 - Oranje
@@ -13,6 +15,7 @@ const POINT_COLORS = [
   "#8b4513"   // Position 8 - Bruin
 ];
 
+// Optionele tekst in de ruit op het canvas; leeg betekent dat het positienummer verschijnt.
 const POSITION_LABELS = [
   "", // text Position 1 - Steven & Nele
   "", // text Position 2 - Dieter & Emily
@@ -24,6 +27,8 @@ const POSITION_LABELS = [
   "" // text Position 8 - Frans & Sandy
 ];
 
+// Beelden op volgorde. Elk beeld bevat de dans/deel-informatie en de coördinaten van de posities.
+// Per punt zijn x en y de plek op de vloer en p het positienummer; order is de vaste beeldcode.
 const BILDER = [
 // Weense Wals 1
 {"drittel":"D1","points":[{"x":-3,"y":1.5,"p":1},{"x":0,"y":1.5,"p":2},{"x":-1.5,"y":0,"p":3},{"x":3,"y":-1.5,"p":4},{"x":0,"y":-1.5,"p":5},{"x":1.5,"y":-3,"p":6},{"x":1.5,"y":0,"p":7},{"x":4.5,"y":-3,"p":8}],"name":"Startpositie: 2x Rechts walsen","tanz":"WW1","order":"010"},
