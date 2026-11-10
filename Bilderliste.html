@@ -5,6 +5,7 @@
 
  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
  
+    <!-- Eerst gegevens, daarna bediening en ten slotte de gedeelde canvasfuncties laden. -->
     <script src="./Bilderliste_files/iiamw.js.downloaden"></script>
     <script src="./Bilderliste_files/index.js.downloaden"></script>
     <script src="./Bilderliste_files/common.js.downloaden"></script>
@@ -13,6 +14,7 @@
     <title>Bilderliste</title>
 	
     <style>
+        /* Basisstijl voor tabellen, knoppen en de algemene indeling. */
         td.l, td.r, .sb{
             width: 2em;
             height: 2em;
@@ -42,6 +44,7 @@
         .container.space-between {
             justify-content: space-between;
         }
+        /* Houdt beide canvassen en de bediening ertussen op een rij. */
 		.canvas-wrapper
 		{
 		display: flex;
@@ -51,7 +54,7 @@
 		overflow-x: auto;
 		}
 		
-		/* slider aanmaken */
+		/* Opmaak van de schuifregelaars voor snelheid en transparantie. */
 		
 .slider-container {
     display: flex;
@@ -126,6 +129,7 @@ input[type=range][orient=vertical] {
         cursor: pointer;
     }
 
+    /* Achtergrond en venster voor de afstandsinformatie. */
     .distance-modal {
         display: none;
         position: fixed;
@@ -169,6 +173,7 @@ input[type=range][orient=vertical] {
         line-height: 1.7;
     }
 
+    /* Opmaak van het scherm met de opgetelde afstanden. */
     #totalsPage {
         display: none;
         width: min(620px, calc(100% - 32px));
@@ -190,7 +195,7 @@ input[type=range][orient=vertical] {
         line-height: 1.8;
     }
 
-/* Stijl voor de nieuwe navigatiebalk */
+/* Opmaak van de navigatiebalk bovenaan de pagina. */
 
 
 .nav-row {
@@ -228,7 +233,7 @@ input[type=range][orient=vertical] {
     }
 
 
-/* --- Mobiele Responsiveness --- */
+/* Past navigatie, canvassen en schuifregelaars aan voor smalle schermen. */
 @media (max-width: 768px) {
     /* Navigatiebalk compacter maken */
     .nav-controls {
@@ -290,6 +295,7 @@ input[type=range][orient=vertical] {
 <body>
 
 
+<!-- Bovenbalk met navigatie per beeld, dans of deel en de admin-toegang. -->
 <div class="nav-controls">
     <div class="nav-row">
         <div class="nav-group">
@@ -312,6 +318,7 @@ input[type=range][orient=vertical] {
     </div>
 </div>
 
+<!-- Werkgebied met het huidige beeld, bediening en het volgende beeld. -->
 <div class="canvas-wrapper">
     <div class="canvas-column">
         <div class="canvas-info">
@@ -346,11 +353,13 @@ input[type=range][orient=vertical] {
     </div>
 </div>
 
+<!-- Wordt getoond na het laatste beeld en bevat de totale afstanden. -->
 <section id="totalsPage" aria-labelledby="totalsPageTitle">
     <h1 id="totalsPageTitle">Totale afstanden per positie</h1>
     <ol id="totalDistanceList" class="total-distance-list"></ol>
 </section>
 
+<!-- Venster waarin de afstanden tussen dit beeld en het volgende staan. -->
 <div id="distanceModal" class="distance-modal" role="dialog" aria-modal="true" aria-labelledby="distanceModalTitle">
     <div class="distance-modal-content">
         <div class="distance-modal-header">
