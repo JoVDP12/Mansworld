@@ -232,7 +232,6 @@ input[type=range][orient=vertical] {
         align-items: center;
     }
 
-
 /* Past navigatie, canvassen en schuifregelaars aan voor smalle schermen. */
 @media (max-width: 768px) {
     /* Navigatiebalk compacter maken */
@@ -295,12 +294,14 @@ input[type=range][orient=vertical] {
 <body>
 
 
-<!-- Bovenbalk met navigatie per beeld, dans of deel en de admin-toegang. -->
+<!-- Bovenbalk met beeldnavigatie, animatiebediening en admin-toegang. -->
 <div class="nav-controls">
     <div class="nav-row">
+        <select id="jumpToTanz" class="btn" aria-label="Spring naar dans">
+            <option value="">Kies een dans...</option>
+        </select>
+
         <div class="nav-group">
-            <button onclick="prevdrittel()" class="btn">&larr; Deel</button>
-            <button onclick="prevtanz()" class="btn">&larr; Dans</button>
             <button onclick="prev()" class="btn">&larr; Beeld</button>
             <button onclick="animatePrev(false)" class="btn">&laquo; Move</button>
             <button onclick="animatePrev(true)" class="btn">&laquo;&laquo; Play to Start</button>
@@ -312,8 +313,6 @@ input[type=range][orient=vertical] {
             <button onclick="animateNext(true)" class="btn">Play to End &raquo;&raquo;</button>
             <button onclick="animateNext(false)" class="btn">Move &raquo;</button>
             <button onclick="next()" class="btn">Beeld &rarr;</button>
-            <button onclick="nexttanz()" class="btn">Dans &rarr;</button>
-            <button onclick="nextdrittel()" class="btn">Deel &rarr;</button>
         </div>
     </div>
 </div>
