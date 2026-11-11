@@ -705,7 +705,7 @@ function refresh() {
     const nextBildinfo = document.getElementById("nextBildinfo");
     if (showLogoPage) {
         document.getElementById("bildinfo").innerText = "Is It A Man's World?";
-        nextBildinfo.innerText = BILDER[0].drittel + " - " + BILDER[0].tanz + " - " + BILDER[0].name;
+        nextBildinfo.innerText = BILDER[0].name;
         const context = canvas1.getContext("2d");
         context.clearRect(0, 0, canvas1.width, canvas1.height);
         if (logoImage.complete && logoImage.naturalWidth > 0) {
@@ -729,10 +729,10 @@ function refresh() {
     }
 
     points = BILDER[current].points;
-    document.getElementById("bildinfo").innerText = BILDER[current].drittel + " - " + BILDER[current].tanz + " - " + BILDER[current].name;
+    document.getElementById("bildinfo").innerText = BILDER[current].name;
     if (current + 1 < BILDER.length) {
         const nextImage = BILDER[current + 1];
-        nextBildinfo.innerText = nextImage.drittel + " - " + nextImage.tanz + " - " + nextImage.name;
+        nextBildinfo.innerText = nextImage.name;
     } else {
         nextBildinfo.innerText = "Geen volgend beeld";
     }
