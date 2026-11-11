@@ -597,8 +597,83 @@ async function saveExtraInfo() {
     }
 }
 
+// Bouwt de dans-keuzelijst opnieuw op zodra danscodes of titels veranderen.
+function ensureJumpControls() {
+    const tanzSelect = document.getElementById("jumpToTanz");
+    if (!tanzSelect) {
+        return;
+    }
+
+    const seen = new Set();
+    const dances = [];
+    for (const [imageIndex, image] of BILDER.entries()) {
+        if (seen.has(image.tanz)) {
+            continue;
+        }
+        seen.add(image.tanz);
+        dances.push({
+            imageIndex,
+            label: image.tanz
+        });
+    }
+
+    const signature = JSON.stringify(dances);
+    if (tanzSelect.dataset.optionsSignature !== signature) {
+        tanzSelect.replaceChildren(new Option("Kies een dans...", ""));
+        for (const dance of dances) {
+            const option = document.createElement("option");
+            option.value = String(dance.imageIndex);
+            option.innerText = dance.label;
+            tanzSelect.appendChild(option);
+        }
+        tanzSelect.dataset.optionsSignature = signature;
+    }
+
+    if (tanzSelect.dataset.listenerAttached !== "true") {
+        tanzSelect.addEventListener("change", jumpToSelectedGroup);
+        tanzSelect.dataset.listenerAttached = "true";
+    }
+}
+
+// Springt naar het eerste beeld van de gekozen dans.
+function jumpToSelectedGroup(event) {
+    if (!event.currentTarget.value) {
+        updateJumpControls();
+        return;
+    }
+
+    const selectedIndex = Number(event.currentTarget.value);
+    if (!Number.isInteger(selectedIndex) || selectedIndex < 0 || selectedIndex >= BILDER.length) {
+        return;
+    }
+
+    inAnimation = false;
+    current = selectedIndex;
+    showLogoPage = false;
+    refresh();
+}
+
+// Selecteert in de keuzelijst de dans van het huidige beeld.
+function updateJumpControls() {
+    const tanzSelect = document.getElementById("jumpToTanz");
+    if (!tanzSelect) {
+        return;
+    }
+
+    if (showLogoPage || current >= BILDER.length) {
+        tanzSelect.value = "";
+        return;
+    }
+
+    const image = BILDER[current];
+    const tanzIndex = BILDER.findIndex(item => item.tanz === image.tanz);
+    tanzSelect.value = String(tanzIndex);
+}
+
 // Werkt knoppen, titels, canvassen en totalen bij na een navigatiestap.
 function refresh() {
+    ensureJumpControls();
+    updateJumpControls();
     ensureExtraInfoControls();
     const extraInfoButton = document.getElementById("extraInfoButton");
     if (extraInfoButton) {
