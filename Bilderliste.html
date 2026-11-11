@@ -199,11 +199,10 @@ input[type=range][orient=vertical] {
 
 
 .nav-row {
-    display: flex;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
     gap: 10px;
     align-items: center;
-    flex-wrap: wrap; /* Zorgt ervoor dat knoppen naar de volgende regel gaan bij te weinig ruimte */
-    justify-content: center;
 }
 
     .nav-title {
@@ -232,6 +231,21 @@ input[type=range][orient=vertical] {
         align-items: center;
     }
 
+    .nav-side {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 0;
+    }
+
+    .nav-left {
+        justify-content: flex-end;
+    }
+
+    .nav-right {
+        justify-content: flex-start;
+    }
+
 /* Past navigatie, canvassen en schuifregelaars aan voor smalle schermen. */
 @media (max-width: 768px) {
     /* Navigatiebalk compacter maken */
@@ -240,7 +254,18 @@ input[type=range][orient=vertical] {
     }
     
     .nav-row {
-        gap: 5px; /* Minder witruimte tussen de knoppen */
+        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        gap: 5px;
+    }
+
+    .nav-side,
+    .nav-group {
+        gap: 5px;
+        flex-wrap: wrap;
+    }
+
+    .nav-side select {
+        max-width: 100%;
     }
 
     /* Maak de knoppen een stuk kleiner */
@@ -297,22 +322,24 @@ input[type=range][orient=vertical] {
 <!-- Bovenbalk met beeldnavigatie, animatiebediening en admin-toegang. -->
 <div class="nav-controls">
     <div class="nav-row">
-        <select id="jumpToTanz" class="btn" aria-label="Spring naar dans">
-            <option value="">Kies een dans...</option>
-        </select>
+        <div class="nav-side nav-left">
+            <select id="jumpToTanz" class="btn" aria-label="Spring naar dans">
+                <option value="">Kies een dans...</option>
+            </select>
 
-        <div class="nav-group">
-            <button onclick="prev()" class="btn">&larr; Beeld</button>
-            <button onclick="animatePrev(false)" class="btn">&laquo; Move</button>
-            <button onclick="animatePrev(true)" class="btn">&laquo;&laquo; Play to Start</button>
+            <div class="nav-group">
+                <button onclick="animatePrev(true)" class="btn">&laquo;&laquo; Play to Start</button>
+                <button onclick="animatePrev(false)" class="btn">&laquo; Move</button>
+                <button onclick="prev()" class="btn">&larr; Beeld</button>
+            </div>
         </div>
 
         <button class="nav-title" type="button" onclick="unlockAdmin()">Is It A Man's World?</button>
 
-        <div class="nav-group">
-            <button onclick="animateNext(true)" class="btn">Play to End &raquo;&raquo;</button>
-            <button onclick="animateNext(false)" class="btn">Move &raquo;</button>
+        <div class="nav-group nav-side nav-right">
             <button onclick="next()" class="btn">Beeld &rarr;</button>
+            <button onclick="animateNext(false)" class="btn">Move &raquo;</button>
+            <button onclick="animateNext(true)" class="btn">Play to End &raquo;&raquo;</button>
         </div>
     </div>
 </div>
