@@ -242,6 +242,10 @@ input[type=range][orient=vertical] {
         justify-content: flex-end;
     }
 
+    .nav-left .nav-group {
+        flex-direction: row-reverse;
+    }
+
     .nav-right {
         justify-content: flex-start;
     }
@@ -254,18 +258,51 @@ input[type=range][orient=vertical] {
     }
     
     .nav-row {
-        grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+        grid-template-columns: minmax(0, 0.75fr) minmax(0, 1fr);
         gap: 5px;
+        grid-template-areas:
+            "dance title"
+            "previous next";
     }
 
-    .nav-side,
+    .nav-left {
+        display: contents;
+    }
+
+    #jumpToTanz {
+        grid-area: dance;
+        width: 100%;
+        min-width: 0;
+        padding: 8px;
+    }
+
+    .nav-row > .nav-title {
+        grid-area: title;
+        min-width: 0;
+        width: 100%;
+        padding: 8px;
+        font-size: 0.85em;
+        white-space: normal;
+    }
+
+    .nav-left .nav-group {
+        grid-area: previous;
+        justify-content: flex-end;
+    }
+
+    .nav-right {
+        grid-area: next;
+    }
+
+    .nav-left .nav-group,
     .nav-group {
         gap: 5px;
         flex-wrap: wrap;
     }
 
-    .nav-side select {
-        max-width: 100%;
+    .nav-group .btn {
+        padding: 6px 8px;
+        font-size: 0.75em;
     }
 
     /* Maak de knoppen een stuk kleiner */
@@ -323,14 +360,13 @@ input[type=range][orient=vertical] {
 <div class="nav-controls">
     <div class="nav-row">
         <div class="nav-side nav-left">
-            <select id="jumpToTanz" class="btn" aria-label="Spring naar dans">
+            <select id="jumpToTanz" class="btn nav-title" aria-label="Spring naar dans">
                 <option value="">Kies een dans...</option>
             </select>
-
             <div class="nav-group">
-                <button onclick="animatePrev(true)" class="btn">&laquo;&laquo; Play to Start</button>
-                <button onclick="animatePrev(false)" class="btn">&laquo; Move</button>
                 <button onclick="prev()" class="btn">&larr; Beeld</button>
+                <button onclick="animatePrev(false)" class="btn">&laquo; Move</button>
+                <button onclick="animatePrev(true)" class="btn">&laquo;&laquo; Play to Start</button>
             </div>
         </div>
 
