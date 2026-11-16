@@ -225,6 +225,14 @@ input[type=range][orient=vertical] {
         opacity: 0.92;
     }
 
+    #jumpToTanz {
+        width: max-content;
+        min-width: 0;
+        max-width: 100%;
+        justify-content: flex-start;
+        text-align: left;
+    }
+
     .nav-group {
         display: flex;
         gap: 10px;
@@ -271,8 +279,7 @@ input[type=range][orient=vertical] {
 
     #jumpToTanz {
         grid-area: dance;
-        width: 100%;
-        min-width: 0;
+        justify-self: start;
         padding: 8px;
     }
 
