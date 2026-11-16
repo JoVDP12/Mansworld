@@ -14,6 +14,7 @@ let extraInfoNotes = null;
 let extraInfoNotesLoaded = false;
 let extraInfoNotesLoadFailed = false;
 let extraInfoNotesLoadPromise = null;
+let coordinatesFileHandle = null;
 
 // Zodra het logo geladen is, wordt het startscherm opnieuw getekend.
 logoImage.onload = function () {
@@ -361,6 +362,9 @@ function ensureExtraInfoControls() {
     const coordinatesDescription = document.createElement("p");
     coordinatesDescription.id = "coordinatesDescription";
 
+    const coordinatesNotice = document.createElement("p");
+    coordinatesNotice.id = "coordinatesNotice";
+
     const sheetTitleLabel = document.createElement("label");
     sheetTitleLabel.htmlFor = "coordinatesSheetTitle";
     sheetTitleLabel.innerText = "Titel van het blad";
@@ -393,12 +397,19 @@ function ensureExtraInfoControls() {
     });
 
     const coordinatesSaveButton = document.createElement("button");
+    coordinatesSaveButton.id = "coordinatesSave";
     coordinatesSaveButton.type = "button";
     coordinatesSaveButton.innerText = "Opslaan in iiamw.js";
     coordinatesSaveButton.addEventListener("click", saveCoordinates);
 
-    coordinatesActions.append(coordinatesCancelButton, coordinatesSaveButton);
-    coordinatesDialog.append(coordinatesTitle, coordinatesDescription, sheetTitleLabel, coordinatesList, coordinatesActions);
+    const coordinatesSelectFileButton = document.createElement("button");
+    coordinatesSelectFileButton.id = "coordinatesSelectFile";
+    coordinatesSelectFileButton.type = "button";
+    coordinatesSelectFileButton.innerText = "Kies iiamw.js-bestand";
+    coordinatesSelectFileButton.addEventListener("click", selectCoordinatesFile);
+
+    coordinatesActions.append(coordinatesSelectFileButton, coordinatesCancelButton, coordinatesSaveButton);
+    coordinatesDialog.append(coordinatesTitle, coordinatesDescription, coordinatesNotice, sheetTitleLabel, coordinatesList, coordinatesActions);
     document.body.appendChild(coordinatesDialog);
 
     const dialog = document.createElement("dialog");
@@ -751,8 +762,16 @@ function refresh() {
 // Vult de editor met de titel en coördinaten van het huidige beeld.
 function openCoordinatesDialog() {
     const image = BILDER[current];
+    const dialog = document.getElementById("coordinatesDialog");
+    dialog.dataset.imageIndex = current;
     const description = document.getElementById("coordinatesDescription");
     document.getElementById("coordinatesSheetTitle").value = image.name;
+    document.getElementById("coordinatesSheetTitle").readOnly = !coordinatesFileHandle;
+    document.getElementById("coordinatesNotice").innerText = coordinatesFileHandle
+        ? "Het iiamw.js-bestand is gekoppeld. Wijzigingen worden daarin bewaard."
+        : "Koppel eerst het lokale iiamw.js-bestand om wijzigingen te kunnen bewaren.";
+    document.getElementById("coordinatesSelectFile").hidden = Boolean(coordinatesFileHandle);
+    document.getElementById("coordinatesSave").hidden = !coordinatesFileHandle;
     const list = document.getElementById("coordinatesList");
 
     description.innerText = "Pas de titel en coördinaten aan. Opslaan werkt het lokale iiamw.js-bestand bij.";
@@ -774,6 +793,7 @@ function openCoordinatesDialog() {
         xInput.type = "number";
         xInput.step = "any";
         xInput.required = true;
+        xInput.disabled = !coordinatesFileHandle;
         xInput.value = point.x;
         xInput.style.width = "70px";
         xInput.style.boxSizing = "border-box";
@@ -785,6 +805,7 @@ function openCoordinatesDialog() {
         yInput.type = "number";
         yInput.step = "any";
         yInput.required = true;
+        yInput.disabled = !coordinatesFileHandle;
         yInput.value = point.y;
         yInput.style.width = "70px";
         yInput.style.boxSizing = "border-box";
@@ -797,7 +818,7 @@ function openCoordinatesDialog() {
         list.appendChild(item);
     }
 
-    document.getElementById("coordinatesDialog").showModal();
+    dialog.showModal();
 }
 
 // Zoekt het sluitende haakje zonder te stoppen bij tekst of codecommentaar.
@@ -957,39 +978,14 @@ function replaceImageCoordinatesInSource(source, imageIndex, updatedName, update
     return source.slice(0, imageStart) + updatedImageSource + source.slice(imageEnd);
 }
 
-// Vraagt toestemming en bewaart de nieuwe titel en coördinaten in iiamw.js.
-async function saveCoordinates() {
-    const updatedName = document.getElementById("coordinatesSheetTitle").value.trim();
-    if (!updatedName) {
-        window.alert("Vul een titel voor het blad in.");
-        return;
-    }
-
-    const list = document.getElementById("coordinatesList");
-    const inputs = Array.from(list.querySelectorAll("input"));
-    const updatedPoints = BILDER[current].points.map(point => {
-        const xInput = inputs.find(input =>
-            Number(input.dataset.position) === point.p && input.dataset.coordinate === "x"
-        );
-        const yInput = inputs.find(input =>
-            Number(input.dataset.position) === point.p && input.dataset.coordinate === "y"
-        );
-        const x = xInput && xInput.value.trim() !== "" ? Number(xInput.value) : NaN;
-        const y = yInput && yInput.value.trim() !== "" ? Number(yInput.value) : NaN;
-        return { ...point, x, y };
-    });
-
-    if (updatedPoints.some(point => !Number.isFinite(point.x) || !Number.isFinite(point.y))) {
-        window.alert("Vul voor elke positie een geldig getal in voor x en y.");
-        return;
-    }
-
-    if (!window.showOpenFilePicker) {
-        window.alert("Bestanden bewerken wordt niet ondersteund. Open de pagina in Chrome of Edge.");
-        return;
-    }
-
+// Koppelt het lokale iiamw.js-bestand voor volgende bewerkingen.
+async function selectCoordinatesFile() {
+    const dialog = document.getElementById("coordinatesDialog");
     try {
+        if (!window.showOpenFilePicker) {
+            throw new Error("Bestanden bewerken wordt niet ondersteund. Open de pagina in Chrome of Edge.");
+        }
+
         const [fileHandle] = await window.showOpenFilePicker({
             multiple: false,
             types: [{
@@ -1007,15 +1003,77 @@ async function saveCoordinates() {
 
         const file = await fileHandle.getFile();
         const source = await file.text();
-        const updatedSource = replaceImageCoordinatesInSource(source, current, updatedName, updatedPoints);
-        const writable = await fileHandle.createWritable();
+        const imageIndex = Number(dialog.dataset.imageIndex);
+        const image = BILDER[imageIndex];
+        replaceImageCoordinatesInSource(source, imageIndex, image.name, image.points);
+        coordinatesFileHandle = fileHandle;
+        document.getElementById("coordinatesSheetTitle").readOnly = false;
+        document.querySelectorAll("#coordinatesList input").forEach(input => {
+            input.disabled = false;
+        });
+        document.getElementById("coordinatesSelectFile").hidden = true;
+        document.getElementById("coordinatesSave").hidden = false;
+        document.getElementById("coordinatesNotice").innerText = "Bestand gekoppeld. Wijzigingen worden daarin bewaard.";
+    } catch (error) {
+        if (error.name !== "AbortError") {
+            window.alert("Het iiamw.js-bestand kon niet worden gekoppeld: " + error.message);
+        }
+    }
+}
+
+// Vraagt toestemming en bewaart de nieuwe titel en coördinaten in iiamw.js.
+async function saveCoordinates() {
+    const dialog = document.getElementById("coordinatesDialog");
+    const imageIndex = Number(dialog.dataset.imageIndex);
+    const updatedName = document.getElementById("coordinatesSheetTitle").value.trim();
+    if (!updatedName) {
+        window.alert("Vul een titel voor het blad in.");
+        return;
+    }
+
+    const list = document.getElementById("coordinatesList");
+    const inputs = Array.from(list.querySelectorAll("input"));
+    const updatedPoints = BILDER[imageIndex].points.map(point => {
+        const xInput = inputs.find(input =>
+            Number(input.dataset.position) === point.p && input.dataset.coordinate === "x"
+        );
+        const yInput = inputs.find(input =>
+            Number(input.dataset.position) === point.p && input.dataset.coordinate === "y"
+        );
+        const x = xInput && xInput.value.trim() !== "" ? Number(xInput.value) : NaN;
+        const y = yInput && yInput.value.trim() !== "" ? Number(yInput.value) : NaN;
+        return { ...point, x, y };
+    });
+
+    if (updatedPoints.some(point => !Number.isFinite(point.x) || !Number.isFinite(point.y))) {
+        window.alert("Vul voor elke positie een geldig getal in voor x en y.");
+        return;
+    }
+
+    try {
+        if (!coordinatesFileHandle) {
+            throw new Error("Koppel eerst het lokale iiamw.js-bestand.");
+        }
+
+        let permission = await coordinatesFileHandle.queryPermission({ mode: "readwrite" });
+        if (permission !== "granted") {
+            permission = await coordinatesFileHandle.requestPermission({ mode: "readwrite" });
+        }
+        if (permission !== "granted") {
+            throw new Error("Geen toestemming om iiamw.js te bewerken.");
+        }
+
+        const file = await coordinatesFileHandle.getFile();
+        const source = await file.text();
+        const updatedSource = replaceImageCoordinatesInSource(source, imageIndex, updatedName, updatedPoints);
+        const writable = await coordinatesFileHandle.createWritable();
         await writable.write(updatedSource);
         await writable.close();
 
-        BILDER[current].name = updatedName;
-        BILDER[current].points = updatedPoints;
+        BILDER[imageIndex].name = updatedName;
+        BILDER[imageIndex].points = updatedPoints;
         refresh();
-        document.getElementById("coordinatesDialog").close();
+        dialog.close();
     } catch (error) {
         if (error.name !== "AbortError") {
             window.alert("De titel en coördinaten konden niet in iiamw.js worden opgeslagen: " + error.message);
