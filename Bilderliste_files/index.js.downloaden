@@ -769,7 +769,7 @@ function openCoordinatesDialog() {
     document.getElementById("coordinatesSheetTitle").readOnly = !coordinatesFileHandle;
     document.getElementById("coordinatesNotice").innerText = coordinatesFileHandle
         ? "Het iiamw.js-bestand is gekoppeld. Wijzigingen worden daarin bewaard."
-        : "Koppel eerst het lokale iiamw.js-bestand om wijzigingen te kunnen bewaren.";
+        : "Koppel eerst het lokale iiamw.js-bestand om wijzigingen te kunnen bewaren. Dit bestaand op de drive van libalforteformatie@gmail.com in de folder Is It A Man's World.";
     document.getElementById("coordinatesSelectFile").hidden = Boolean(coordinatesFileHandle);
     document.getElementById("coordinatesSave").hidden = !coordinatesFileHandle;
     const list = document.getElementById("coordinatesList");
